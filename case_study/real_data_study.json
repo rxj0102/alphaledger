@@ -18,7 +18,7 @@
     "hurdle_sharpe_effective": 0.159,
     "certified": false,
     "pbo": 0.237,
-    "pick_holdout_sharpe": 0.285,
+    "pick_holdout_sharpe": 0.2849,
     "pick_holdout_days": 1851,
     "top5": [
       {
@@ -77,7 +77,7 @@
     "hurdle_sharpe_effective": 0.352,
     "certified": false,
     "pbo": 0.042,
-    "pick_holdout_sharpe": -0.128,
+    "pick_holdout_sharpe": -0.1284,
     "pick_holdout_days": 1851,
     "top5": [
       {

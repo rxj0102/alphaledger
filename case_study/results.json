@@ -14,12 +14,12 @@
     "alphaledger": {
       "effective_trials": 60.0,
       "hurdle_sharpe_effective": 0.948,
-      "best_dsr_effective": 0.348,
+      "best_dsr_effective": 0.347979,
       "pass_dsr_effective_95": 0,
       "hurdle_sharpe": 1.863,
       "hurdle_sharpe_analytic": 1.117,
-      "best_dsr": 0.0032,
-      "best_dsr_analytic": 0.2086,
+      "best_dsr": 0.003204,
+      "best_dsr_analytic": 0.208602,
       "pass_dsr_analytic_95": 0,
       "significant_after_bh": 0,
       "pass_dsr_95": 0,
@@ -27,7 +27,7 @@
       "best_haircut_sharpe_holm": 0.0
     },
     "holdout_of_naive_pick": {
-      "sharpe": -1.371,
+      "sharpe": -1.3709,
       "psr_vs_zero": 0.0401,
       "days": 404
     },
@@ -48,12 +48,12 @@
     "alphaledger": {
       "effective_trials": 62.0,
       "hurdle_sharpe_effective": 0.952,
-      "best_dsr_effective": 0.8418,
+      "best_dsr_effective": 0.841814,
       "pass_dsr_effective_95": 0,
       "hurdle_sharpe": 2.408,
       "hurdle_sharpe_analytic": 1.117,
-      "best_dsr": 0.0065,
-      "best_dsr_analytic": 0.7236,
+      "best_dsr": 0.006504,
+      "best_dsr_analytic": 0.723556,
       "pass_dsr_analytic_95": 0,
       "significant_after_bh": 0,
       "pass_dsr_95": 0,
