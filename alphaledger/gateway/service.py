@@ -424,7 +424,7 @@ class ResearchGateway:
         result = {
             "holdout_start": str(self.holdout_start.date()),
             "holdout_days": int(t_obs),
-            "holdout_sharpe": _r(sr * math.sqrt(252), 3),
+            "holdout_sharpe": _r(sr * math.sqrt(252), 4),
             "holdout_psr_vs_zero": _r(psr(sr, t_obs, skew, kurt, 0.0)),
         }
         self.ledger.note("holdout_eval", hypothesis_id=hypothesis_id, data={"holdout_eval": result})

@@ -8,7 +8,7 @@ AI agents can propose and backtest hundreds of trading signals in an afternoon. 
 
 ```
 pip install -e .[dev]
-pytest                                            # 173 tests, plus 4 live data checks (ALPHALEDGER_NETWORK_TESTS=1)
+pytest                                            # 184 tests, plus 4 live data checks (ALPHALEDGER_NETWORK_TESTS=1)
 python examples/controlled_study.py               # blind vs pre-registered agents on 40 markets, about 15 minutes
 python examples/week6_case_study.py               # one 200-trial blind agent in detail, about 10 minutes
 python examples/real_data_study.py                # both agents on 49 real US industries, about 10 minutes
@@ -19,7 +19,9 @@ alphaledger-dashboard research.db                 # Streamlit dashboard
 
 Headline (controlled study, 20 synthetic markets with a real edge and 20 of pure noise, both agents on identical markets): an agent that tried 100 random signals got its best pick certified on 50% of the markets that had a real edge; an agent that tested 6 hypotheses written down in advance got it certified on 95%. Neither was certified on any of the 20 noise markets. Blind search does not only risk false discoveries; it spends the statistical power needed to confirm true ones. The 6 pre-registered hypotheses were the obvious literature priors and happen to match the planted edge, so this is the case where priors are right.
 
-On real data (49 US industry portfolios, 1990 to 2026), neither agent's pick could be certified. The pre-registered pick, 12-1 industry momentum, had an in-sample Sharpe of 0.42 and 0.29 on the hidden 2019 to 2026 holdout. The blind agent's pick looked better in sample (0.46) and lost money on the holdout (-0.13). One real history is one sample, so this is an illustration, not evidence.
+On real data (49 US industry portfolios, 1990 to 2026), neither agent's pick could be certified. The pre-registered pick, 12-1 industry momentum, had an in-sample Sharpe of 0.42 and 0.28 on the hidden 2019 to 2026 holdout. The blind agent's pick looked better in sample (0.46) and lost money on the holdout (-0.13). One real history is one sample, so this is an illustration, not evidence.
+
+**Every number in this README comes from code.** `tests/test_readme_numbers.py` recomputes the tables from the fast demos, and checks the tables from the long studies against the results those studies record in `case_study/*.json`, so CI fails if the page and the results disagree. The check caught one wrong number when it was added: a holdout Sharpe of 0.2849 that the README, rounding an already-rounded value, had given as 0.29.
 
 ## Status
 
@@ -327,7 +329,7 @@ Caveats: 20 markets per cell, so rates carry sampling error (95% against 50% is 
 | Pick DSR: effective / analytic / trial spread | 0.91 / 0.82 / 0.79 | 0.71 / 0.47 / 0.00 |
 | Certified (DSR effective at least 0.95) | no | no |
 | PBO | 0.24 | 0.04 |
-| Pick holdout Sharpe, 2019 to 2026 | 0.29 | -0.13 |
+| Pick holdout Sharpe, 2019 to 2026 | 0.28 | -0.13 |
 
 The blind agent found a pick that looked slightly better in sample and lost money out of sample. The pre-registered pick is classic 12-1 industry momentum (Moskowitz and Grinblatt, 1999); it stayed positive out of sample but was too weak over 29 years to clear the hurdle with confidence, so alphaledger declined to certify it. The blind agent's low PBO is a reminder that PBO measures how stable the ranking of trials is, not whether the winner is real. This is one history of one market: it illustrates the workflow on real, survivor-free data and should not be read as evidence about either agent.
 
@@ -377,6 +379,7 @@ On noise the naive pick (0.78 in sample) lost money on the holdout and nothing w
 - Execution was same-close by default in the gateway; it is now next-day.
 - Missing returns after a delisting counted as zero; a delisting return is now applied.
 - Ken French factors were marked available the same day; now the end of the following month.
+- A README number was rounded twice and wrong (0.29 for 0.2849); the README is now checked against recorded results in CI.
 
 ## Related work
 

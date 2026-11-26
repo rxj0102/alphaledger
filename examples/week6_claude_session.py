@@ -99,6 +99,18 @@ def main() -> None:
           f"share below zero {np.mean(sr < 0):.2f}")
     print(f"  this session's result is {(sr.mean() - ho['holdout_sharpe']) / sr.std():.1f} sd below the mean")
 
+    (out / "claude_session.json").write_text(json.dumps({
+        "trials": board["n_trials"],
+        "effective_trials": board["effective_independent_trials"],
+        "n_significant_after_fdr": board["n_significant_after_fdr"],
+        "leaderboard": board["top"],
+        "expressions_in_order": [e for e, *_ in SESSION],
+        "holdout_pick": SESSION[HOLDOUT_PICK][0],
+        "holdout_sharpe": ho["holdout_sharpe"],
+        "other_seeds_holdout": {"mean": float(sr.mean()), "sd": float(sr.std()), "min": float(sr.min())},
+        "sd_below_mean": float((sr.mean() - ho["holdout_sharpe"]) / sr.std()),
+    }, indent=2))
+
 
 if __name__ == "__main__":
     main()

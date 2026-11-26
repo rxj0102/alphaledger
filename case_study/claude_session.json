@@ -1,0 +1,89 @@
+{
+  "trials": 6,
+  "effective_trials": 3.2,
+  "n_significant_after_fdr": 4,
+  "leaderboard": [
+    {
+      "hypothesis_id": "h_976246929fce",
+      "expression": "rank(momentum(126, 5))",
+      "naive_sharpe": 1.109,
+      "deflated_sharpe_ratio_effective": 0.9666,
+      "deflated_sharpe_ratio_analytic": 0.9172,
+      "deflated_sharpe_ratio_trial_spread": 0.0817,
+      "significant_after_fdr": true,
+      "haircut_sharpe": 0.834,
+      "tested_after_holdout_look": false
+    },
+    {
+      "hypothesis_id": "h_21895d8c7691",
+      "expression": "0.5 * rank(momentum(126, 5)) + 0.5 * rank(ts_zscore(price, 252))",
+      "naive_sharpe": 0.998,
+      "deflated_sharpe_ratio_effective": 0.9271,
+      "deflated_sharpe_ratio_analytic": 0.8433,
+      "deflated_sharpe_ratio_trial_spread": 0.0566,
+      "significant_after_fdr": true,
+      "haircut_sharpe": 0.702,
+      "tested_after_holdout_look": false
+    },
+    {
+      "hypothesis_id": "h_a3fbc42e04b5",
+      "expression": "rank(ts_zscore(price, 252))",
+      "naive_sharpe": 0.991,
+      "deflated_sharpe_ratio_effective": 0.9247,
+      "deflated_sharpe_ratio_analytic": 0.8392,
+      "deflated_sharpe_ratio_trial_spread": 0.0549,
+      "significant_after_fdr": true,
+      "haircut_sharpe": 0.702,
+      "tested_after_holdout_look": false
+    },
+    {
+      "hypothesis_id": "h_310ec58c31ce",
+      "expression": "rank(momentum(252, 21))",
+      "naive_sharpe": 0.838,
+      "deflated_sharpe_ratio_effective": 0.8604,
+      "deflated_sharpe_ratio_analytic": 0.7378,
+      "deflated_sharpe_ratio_trial_spread": 0.0255,
+      "significant_after_fdr": true,
+      "haircut_sharpe": 0.611,
+      "tested_after_holdout_look": false
+    },
+    {
+      "hypothesis_id": "h_3a2fc84b0c20",
+      "expression": "rank(-ts_std(returns, 63))",
+      "naive_sharpe": -0.429,
+      "deflated_sharpe_ratio_effective": 0.0279,
+      "deflated_sharpe_ratio_analytic": 0.0091,
+      "deflated_sharpe_ratio_trial_spread": 0.0,
+      "significant_after_fdr": false,
+      "haircut_sharpe": -0.429,
+      "tested_after_holdout_look": false
+    },
+    {
+      "hypothesis_id": "h_8ab78f717811",
+      "expression": "rank(-ts_sum(returns, 5))",
+      "naive_sharpe": -2.145,
+      "deflated_sharpe_ratio_effective": 0.0,
+      "deflated_sharpe_ratio_analytic": 0.0,
+      "deflated_sharpe_ratio_trial_spread": 0.0,
+      "significant_after_fdr": false,
+      "haircut_sharpe": -2.145,
+      "tested_after_holdout_look": false
+    }
+  ],
+  "expressions_in_order": [
+    "rank(momentum(252, 21))",
+    "rank(-ts_sum(returns, 5))",
+    "rank(-ts_std(returns, 63))",
+    "rank(momentum(126, 5))",
+    "rank(ts_zscore(price, 252))",
+    "0.5 * rank(momentum(126, 5)) + 0.5 * rank(ts_zscore(price, 252))"
+  ],
+  "holdout_pick": "rank(momentum(126, 5))",
+  "holdout_sharpe": -1.1214,
+  "other_seeds_holdout": {
+    "mean": 1.0562554552506083,
+    "sd": 0.6995534583158083,
+    "min": -0.24648716346525595
+  },
+  "sd_below_mean": 3.1129221496429538
+}
