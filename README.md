@@ -8,15 +8,18 @@ AI agents can propose and backtest hundreds of trading signals in an afternoon. 
 
 ```
 pip install -e .[dev]
-pytest                                            # 160 tests
+pytest                                            # 162 tests, plus 4 live data checks (ALPHALEDGER_NETWORK_TESTS=1)
 python examples/controlled_study.py               # blind vs pre-registered agents on 40 markets, about 15 minutes
 python examples/week6_case_study.py               # one 200-trial blind agent in detail, about 10 minutes
+python examples/real_data_study.py                # both agents on 49 real US industries, about 10 minutes
 alphaledger-mcp --ledger research.db --synthetic  # point Claude or any MCP client at the gateway
 alphaledger-report research.db -o report.html     # one-file report of any ledger
 alphaledger-dashboard research.db                 # Streamlit dashboard
 ```
 
 Headline (controlled study, 20 synthetic markets with a real edge and 20 of pure noise, both agents on identical markets): an agent that tried 100 random signals got its best pick certified on 50% of the markets that had a real edge; an agent that tested 6 hypotheses written down in advance got it certified on 95%. Neither was certified on any of the 20 noise markets. Blind search does not only risk false discoveries; it spends the statistical power needed to confirm true ones. The 6 pre-registered hypotheses were the obvious literature priors and happen to match the planted edge, so this is the case where priors are right.
+
+On real data (49 US industry portfolios, 1990 to 2026), neither agent's pick could be certified. The pre-registered pick, 12-1 industry momentum, had an in-sample Sharpe of 0.42 and 0.29 on the hidden 2019 to 2026 holdout. The blind agent's pick looked better in sample (0.46) and lost money on the holdout (-0.13). One real history is one sample, so this is an illustration, not evidence.
 
 ## Status
 
@@ -38,10 +41,12 @@ Headline (controlled study, 20 synthetic markets with a real edge and 20 of pure
 
 **Missing returns.** A gap inside an asset's history (a halt) earns zero. A missing return after an asset's last valid one means it stopped trading: a position held at that point takes a one-off delisting return of -30% (close to the average performance-related delisting return reported by Shumway, 1997) and is then closed. Treating those returns as zero would silently hide the losses. `delist_return=None` switches this off.
 
-**Free data loaders** (`alphaledger/data/sources.py`):
-- Ken French daily factors. The library is updated monthly with a lag, so a day's factor return is treated as known only at the end of the following month.
-- FRED vintages through the official API with the full real-time period, so each value enters at its release date (needs a free FRED API key)
-- yfinance adjusted closes. Universes built from yfinance are survivorship-biased because delisted tickers are missing; any result using them says so.
+**Free data loaders** (`alphaledger/data/sources.py`), all run live on 26 Nov 2026 (`ALPHALEDGER_NETWORK_TESTS=1 pytest tests/test_sources.py`; off by default so CI does not depend on outside services):
+- Ken French daily factors. The library is updated monthly with a lag, so a day's factor return is treated as known only at the end of the following month. Checked against the live file: the copy downloaded on 26 Nov 2026 was built from the September 2026 CRSP database and dated 26 Oct 2026.
+- Ken French 49 industry portfolios, daily, as a free asset universe. They are rebuilt each June from the stocks alive at the time, so they have no survivorship bias. Missing codes (-99.99, -999) become NaN; the data is complete from 1990.
+- FRED vintages through the official API with the full real-time period, so each value enters at its release date. Needs a free FRED API key; this path is tested only against fixtures because no key was available.
+- FRED vintages without a key, from monthly ALFRED snapshots. Each value enters at the first snapshot that shows it, so it can be up to a month late but never early. Tested live: in a snapshot from early January 2020, December 2019 industrial production is correctly absent.
+- yfinance adjusted closes, tested live. Universes built from yfinance are survivorship-biased because delisted tickers are missing; any result using them says so. Yahoo rate-limits aggressively (a 429 is common); yfinance retries without a session cookie.
 
 Parsers are tested offline against fixture text. Network fetch functions are thin wrappers around them.
 
@@ -71,6 +76,8 @@ python examples/week1_momentum.py            # synthetic market with planted mom
 python examples/week1_momentum.py --noise    # synthetic pure noise
 python examples/week1_momentum.py --yfinance AAPL MSFT NVDA JPM XOM   # real prices, needs pip install yfinance
 ```
+
+On real prices for 24 large US stocks from 2006 to 25 Nov 2026 (today's survivors, so biased upwards), the same 12-1 momentum strategy had a Sharpe of -0.06 (t-stat -0.27, max drawdown -54%), against 2.83 on the synthetic market built to reward it. With about 5 stocks per leg this is a check that the real-data path works end to end, not a test of momentum.
 
 Output from the two synthetic runs (200 assets, seed 0, 12-1 momentum, quintile long short, monthly rebalance, lag 1, 5 bps costs):
 
@@ -295,6 +302,25 @@ What it shows:
 
 Caveats: 20 markets per cell, so rates carry sampling error (95% against 50% is clear; small differences are not). The pre-registered list matches the planted edge; with wrong priors, discipline does not create power. The leak audit was off in this study for speed, which is safe here because every expression comes from the causal language.
 
+### Real data: 49 US industry portfolios
+
+`examples/real_data_study.py` runs the same two agents on Kenneth French's 49 value-weighted industry portfolios, daily, from January 1990. The in-sample period is 1990 to May 2019; the hidden holdout is May 2019 to September 2026 (1,851 days). Same gateway rules: next-day execution, 5 bps costs, leak audit on, best in-sample trial opens the holdout once. HTML reports for both agents are in `case_study/`.
+
+| | Pre-registered (6 trials) | Blind (100 trials) |
+|---|---|---|
+| Effective independent trials | 3.0 | 20.0 |
+| Raw p < 0.05, one-sided | 3 | 7 |
+| Significant after BH | 0 | 0 |
+| Pick | `rank(momentum(252, 21))` | `0.7 * rank(ts_zscore(price, 252)) - 0.3 * rank(range position over 21 days)`, q 0.3 |
+| Pick in-sample Sharpe | 0.42 | 0.46 |
+| Hurdle Sharpe (effective trials) | 0.16 | 0.35 |
+| Pick DSR: effective / analytic / trial spread | 0.91 / 0.82 / 0.79 | 0.71 / 0.47 / 0.00 |
+| Certified (DSR effective at least 0.95) | no | no |
+| PBO | 0.24 | 0.04 |
+| Pick holdout Sharpe, 2019 to 2026 | 0.29 | -0.13 |
+
+The blind agent found a pick that looked slightly better in sample and lost money out of sample. The pre-registered pick is classic 12-1 industry momentum (Moskowitz and Grinblatt, 1999); it stayed positive out of sample but was too weak over 29 years to clear the hurdle with confidence, so alphaledger declined to certify it. The blind agent's low PBO is a reminder that PBO measures how stable the ranking of trials is, not whether the winner is real. This is one history of one market: it illustrates the workflow on real, survivor-free data and should not be read as evidence about either agent.
+
 ### Case study 1: one blind agent in detail
 
 `examples/week6_case_study.py` runs the blind agent for 200 trials on one noise market and one planted market, with the leak audit on, and writes an HTML report for each to `case_study/`.
@@ -357,7 +383,7 @@ The statistical methods follow Bailey and Lopez de Prado (2012, 2014), Bailey, B
 
 ## Limitations
 
-- All headline results use synthetic markets, chosen because the truth is known, and the same author wrote the generator, the agents' grammar and the studies. The real data loaders are tested on fixtures only; the network fetchers (yfinance, FRED, Ken French) have not been run in this repo's test environment.
+- The controlled results use synthetic markets, chosen because the truth is known, and the same author wrote the generator, the agents' grammar and the studies. The one real-data study is a single history of one market. The FRED API path is untested live because no API key was available; the keyless ALFRED path, Ken French and yfinance were tested live.
 - The gateway can only account for what passes through it. Its guarantees depend on deployment: the operator holds the data and the key, and the agent only gets the MCP connection. An agent with its own copy of the data can always backtest elsewhere.
 - The ledger's timestamps come from the server clock and are not independently attested; anchoring to an external system fixes order and content, not wall-clock time.
 - The backtester models linear costs only: no borrow costs, market impact or capacity limits. The -30% delisting return is a single assumption, not security-specific.
@@ -366,7 +392,7 @@ The statistical methods follow Bailey and Lopez de Prado (2012, 2014), Bailey, B
 - The language model's own memory of market history is a leak no data-level check can see (see Li et al. above). Synthetic or anonymized data avoids it.
 - A discrete choice made with hindsight can pass the leak audit when the edge is strong (see Week 4); only the trial count catches it.
 - The effective number of trials is an estimate: the cluster threshold (0.5) is a choice, and both estimators are built from noisy sample correlations. The three DSR versions bracket the answer rather than settle it.
-- CI is configured for Python 3.10 to 3.13 but has not run yet. The suite was run locally on Python 3.13 (pandas 3.0 and 2.2) and Python 3.10 (pandas 2.3).
+- The GitHub Actions workflow has not run yet because the repository is not on GitHub. Its steps (`pip install -e .[dev]`, `pytest -q`) were reproduced locally on every version in its matrix: Python 3.10 (pandas 2.3), 3.11 and 3.12 (pandas 3.1), and 3.13 (pandas 3.0 and 2.2).
 
 ## License
 

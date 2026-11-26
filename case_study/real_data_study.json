@@ -1,0 +1,120 @@
+[
+  {
+    "agent": "preregistered",
+    "in_sample": "1990-01-02 to 2019-05-20",
+    "holdout": "2019-05-21 to 2026-09-30",
+    "trials": 6,
+    "effective_trials": 3.0,
+    "leak_audit_failures": 0,
+    "raw_significant_one_sided": 3,
+    "significant_after_bh": 0,
+    "pick": "rank(momentum(252, 21))",
+    "pick_q": 0.2,
+    "pick_rebalance": "M",
+    "pick_in_sample_sharpe": 0.42,
+    "pick_dsr_effective": 0.9147,
+    "pick_dsr_analytic": 0.8231,
+    "pick_dsr_trial_spread": 0.7874,
+    "hurdle_sharpe_effective": 0.159,
+    "certified": false,
+    "pbo": 0.237,
+    "pick_holdout_sharpe": 0.285,
+    "pick_holdout_days": 1851,
+    "top5": [
+      {
+        "expression": "rank(momentum(252, 21))",
+        "q": 0.2,
+        "rebalance": "M",
+        "in_sample_sharpe": 0.42,
+        "dsr_effective": 0.9147
+      },
+      {
+        "expression": "rank(ts_zscore(price, 252))",
+        "q": 0.2,
+        "rebalance": "M",
+        "in_sample_sharpe": 0.341,
+        "dsr_effective": 0.8297
+      },
+      {
+        "expression": "0.5 * rank(momentum(126, 5)) + 0.5 * rank(ts_zscore(price, 252))",
+        "q": 0.2,
+        "rebalance": "M",
+        "in_sample_sharpe": 0.315,
+        "dsr_effective": 0.7927
+      },
+      {
+        "expression": "rank(momentum(126, 5))",
+        "q": 0.2,
+        "rebalance": "M",
+        "in_sample_sharpe": 0.175,
+        "dsr_effective": 0.5355
+      },
+      {
+        "expression": "rank(-ts_sum(returns, 5))",
+        "q": 0.2,
+        "rebalance": "M",
+        "in_sample_sharpe": 0.11,
+        "dsr_effective": 0.3985
+      }
+    ]
+  },
+  {
+    "agent": "blind",
+    "in_sample": "1990-01-02 to 2019-05-20",
+    "holdout": "2019-05-21 to 2026-09-30",
+    "trials": 100,
+    "effective_trials": 20.0,
+    "leak_audit_failures": 0,
+    "raw_significant_one_sided": 7,
+    "significant_after_bh": 0,
+    "pick": "0.7 * rank(ts_zscore(price, 252)) - 0.3 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))",
+    "pick_q": 0.3,
+    "pick_rebalance": "M",
+    "pick_in_sample_sharpe": 0.462,
+    "pick_dsr_effective": 0.7104,
+    "pick_dsr_analytic": 0.4731,
+    "pick_dsr_trial_spread": 0.0,
+    "hurdle_sharpe_effective": 0.352,
+    "certified": false,
+    "pbo": 0.042,
+    "pick_holdout_sharpe": -0.128,
+    "pick_holdout_days": 1851,
+    "top5": [
+      {
+        "expression": "0.7 * rank(ts_zscore(price, 252)) - 0.3 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))",
+        "q": 0.3,
+        "rebalance": "M",
+        "in_sample_sharpe": 0.462,
+        "dsr_effective": 0.7104
+      },
+      {
+        "expression": "0.7 * rank(-ts_sum(returns, 3)) + 0.3 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))",
+        "q": 0.3,
+        "rebalance": "M",
+        "in_sample_sharpe": 0.407,
+        "dsr_effective": 0.6182
+      },
+      {
+        "expression": "rank(momentum(189, 5))",
+        "q": 0.2,
+        "rebalance": "M",
+        "in_sample_sharpe": 0.392,
+        "dsr_effective": 0.5764
+      },
+      {
+        "expression": "0.7 * rank(ts_zscore(price, 252)) - 0.3 * rank(ts_zscore(price, 252))",
+        "q": 0.3,
+        "rebalance": "M",
+        "in_sample_sharpe": 0.37,
+        "dsr_effective": 0.5269
+      },
+      {
+        "expression": "rank(momentum(189, 5))",
+        "q": 0.3,
+        "rebalance": "M",
+        "in_sample_sharpe": 0.36,
+        "dsr_effective": 0.5107
+      }
+    ]
+  }
+]

@@ -1,0 +1,55 @@
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><title>Preregistered agent on 49 US industries (real data)</title><meta name='viewport' content='width=device-width, initial-scale=1'><style>
+.viz-root { color-scheme: light; --surface-1:#ffffff; --surface-2:#f6f6f4; --text-primary:#191919;
+  --text-secondary:#666666; --grid:#e4e4e0; --series-1:#257de0; --series-2:#f47230; --good:#008a17;
+  --critical:#ec4647; font-family: -apple-system, Segoe UI, Roboto, sans-serif; background:var(--surface-1);
+  color:var(--text-primary); margin:0; padding:32px; }
+@media (prefers-color-scheme: dark) { .viz-root { color-scheme: dark; --surface-1:#191919; --surface-2:#232323;
+  --text-primary:#efefef; --text-secondary:#9c9c9c; --grid:#333333; --series-1:#338ced; --series-2:#e76624;
+  --good:#0aac23; --critical:#eb6263; } }
+.wrap { max-width: 1040px; margin: 0 auto; }
+h1 { font-size: 24px; margin: 0 0 4px; } h2 { font-size: 16px; margin: 32px 0 12px; }
+.sub { color: var(--text-secondary); font-size: 13px; margin-bottom: 24px; }
+.tiles { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.tile { background: var(--surface-2); border-radius: 10px; padding: 14px 16px; }
+.tile .k { color: var(--text-secondary); font-size: 12px; } .tile .v { font-size: 24px; font-weight: 600; margin-top: 4px; }
+.tile .n { color: var(--text-secondary); font-size: 11px; margin-top: 2px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+th { color: var(--text-secondary); font-weight: 500; } td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+code { font-size: 12px; } .badge { display:inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; }
+.ok { color: var(--good); } .bad { color: var(--critical); }
+.legend { font-size: 12px; color: var(--text-secondary); display:flex; gap:16px; margin: 4px 0 8px; }
+.sw { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:-1px; }
+svg text { fill: var(--text-secondary); font-size: 11px; }
+.pt { stroke: var(--surface-1); stroke-width: 2; } .pt:hover { stroke: var(--text-primary); }
+</style></head><body class='viz-root'><div class='wrap'><h1>Preregistered agent on 49 US industries (real data)</h1><div class='sub'>Every number is computed from the ledger. Sharpe ratios are annualized. DSR, BH and haircut account for every trial, including failures.</div><div class='tiles'><div class='tile'><div class='k'>Trials counted</div><div class='v'>6</div><div class='n'>includes failed and leaky runs</div></div><div class='tile'><div class='k'>Best naive Sharpe</div><div class='v'>0.42</div><div class='n'>annualized, in sample</div></div><div class='tile'><div class='k'>Effective trials</div><div class='v'>3.0</div><div class='n'>independent trials after correlation</div></div><div class='tile'><div class='k'>Hurdle Sharpe</div><div class='v'>0.16</div><div class='n'>effective; analytic 0.24, trial spread 0.27</div></div><div class='tile'><div class='k'>Best deflated Sharpe ratio</div><div class='v'>0.915</div><div class='n'>effective; analytic 0.823, trial spread 0.787; 0.95 or more is convincing</div></div><div class='tile'><div class='k'>Significant after BH</div><div class='v'>0</div><div class='n'>3 before correction, one-sided</div></div><div class='tile'><div class='k'>PBO</div><div class='v'>0.24</div><div class='n'>probability of backtest overfitting</div></div><div class='tile'><div class='k'>Hypotheses logged</div><div class='v'>6</div><div class='n'>ok 6</div></div><div class='tile'><div class='k'>Ledger chain</div><div class='v'><span class="ok">verified</span></div><div class='n'>14 entries, head 14689a2fb50d</div></div></div><h2>Naive Sharpe against deflated Sharpe ratio (effective trials)</h2><div class="legend"><span><span class="sw" style="background:var(--series-1)"></span>not significant after BH</span><span><span class="sw" style="background:var(--series-2)"></span>significant after BH (one-sided)</span><span>dashed line: DSR 0.95</span></div><svg viewBox="0 0 960 340" width="100%" role="img" aria-label="Naive Sharpe against effective deflated Sharpe ratio for each trial"><line x1="56" x2="944" y1="300.0" y2="300.0" stroke="var(--grid)"/><text x="50" y="304.0" text-anchor="end">0</text><line x1="56" x2="944" y1="158.0" y2="158.0" stroke="var(--grid)"/><text x="50" y="162.0" text-anchor="end">0.5</text><line x1="56" x2="944" y1="30.2" y2="30.2" stroke="var(--grid)" stroke-dasharray="4 4"/><text x="50" y="34.2" text-anchor="end">0.95</text><text transform="translate(12 158) rotate(-90)" text-anchor="middle">DSR, effective trials</text><text x="345.5" y="316" text-anchor="middle">0</text><text x="921.2" y="316" text-anchor="middle">0.5</text><line x1="529.1" x2="529.1" y1="16" y2="300" stroke="var(--text-secondary)" stroke-dasharray="2 3"/><text x="533.1" y="26" text-anchor="start">hurdle Sharpe 0.16</text><text x="508" y="336" text-anchor="middle">naive annual Sharpe</text><circle class="pt" cx="828.9" cy="40.2" r="5" fill="var(--series-1)"><title>rank(momentum(252, 21))
+naive Sharpe 0.42
+DSR 0.787
+DSR effective 0.915
+BH significant: False
+h_b2faf6582475</title></circle><circle class="pt" cx="737.9" cy="64.4" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 252))
+naive Sharpe 0.34
+DSR 0.648
+DSR effective 0.830
+BH significant: False
+h_581c7ebe8cc7</title></circle><circle class="pt" cx="707.9" cy="74.9" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(126, 5)) + 0.5 * rank(ts_zscore(price, 252))
+naive Sharpe 0.31
+DSR 0.596
+DSR effective 0.793
+BH significant: False
+h_39e3b8ea704c</title></circle><circle class="pt" cx="547.5" cy="147.9" r="5" fill="var(--series-1)"><title>rank(momentum(126, 5))
+naive Sharpe 0.18
+DSR 0.309
+DSR effective 0.536
+BH significant: False
+h_b75597c79644</title></circle><circle class="pt" cx="472.3" cy="186.8" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 5))
+naive Sharpe 0.11
+DSR 0.195
+DSR effective 0.398
+BH significant: False
+h_e41ca5c10025</title></circle><circle class="pt" cx="171.1" cy="286.6" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 63))
+naive Sharpe -0.15
+DSR 0.012
+DSR effective 0.047
+BH significant: False
+h_455c3837f138</title></circle></svg><h2>Leaderboard (top 6 of 6 by naive Sharpe)</h2><table><tr><th>Hypothesis</th><th class='num'>Naive Sharpe</th><th class='num'>DSR trial spread</th><th class='num'>DSR analytic</th><th class='num'>DSR effective</th><th class='num'>BH p</th><th class='num'>Haircut Sharpe</th><th class='num'>Days</th></tr><tr><td><code>rank(momentum(252, 21))</code><br><span class='sub'>h_b2faf6582475</span></td><td class='num'>0.42</td><td class='num'>0.787</td><td class='num'>0.823</td><td class='num'>0.915</td><td class='num'>0.076</td><td class='num'>0.27</td><td class='num'>7149</td></tr><tr><td><code>rank(ts_zscore(price, 252))</code><br><span class='sub'>h_581c7ebe8cc7</span></td><td class='num'>0.34</td><td class='num'>0.648</td><td class='num'>0.695</td><td class='num'>0.830</td><td class='num'>0.094</td><td class='num'>0.18</td><td class='num'>7149</td></tr><tr><td><code>0.5 * rank(momentum(126, 5)) + 0.5 * rank(ts_zscore(price, 252))</code><br><span class='sub'>h_39e3b8ea704c</span></td><td class='num'>0.31</td><td class='num'>0.596</td><td class='num'>0.645</td><td class='num'>0.793</td><td class='num'>0.094</td><td class='num'>0.17</td><td class='num'>7149</td></tr><tr><td><code>rank(momentum(126, 5))</code><br><span class='sub'>h_b75597c79644</span></td><td class='num'>0.18</td><td class='num'>0.309</td><td class='num'>0.361</td><td class='num'>0.536</td><td class='num'>0.259</td><td class='num'>0.00</td><td class='num'>7276</td></tr><tr><td><code>rank(-ts_sum(returns, 5))</code><br><span class='sub'>h_e41ca5c10025</span></td><td class='num'>0.11</td><td class='num'>0.195</td><td class='num'>0.240</td><td class='num'>0.398</td><td class='num'>0.331</td><td class='num'>0.00</td><td class='num'>7380</td></tr><tr><td><code>rank(-ts_std(returns, 63))</code><br><span class='sub'>h_455c3837f138</span></td><td class='num'>-0.15</td><td class='num'>0.012</td><td class='num'>0.017</td><td class='num'>0.047</td><td class='num'>0.793</td><td class='num'>-0.15</td><td class='num'>7339</td></tr></table></div></body></html>
