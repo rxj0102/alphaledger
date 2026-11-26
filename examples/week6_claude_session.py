@@ -48,8 +48,10 @@ HOLDOUT_PICK = 3  # chosen before opening the holdout: strongest prior and best 
 
 def main() -> None:
     returns = make_market(n_assets=100, n_days=252 * 8, drift_vol=0.0006, seed=303)
+    # The session was run when the gateway traded at the same close (lag 1);
+    # the replay keeps that setting so it reproduces the decisions as made.
     gw = ResearchGateway(returns, holdout_frac=0.2, holdout_budget=2, cost_bps=5,
-                         data_label="synthetic seed 303")
+                         data_label="synthetic seed 303", execution_lag=1)
     ids = []
     print("Session")
     for expr, q, freq, parent, why in SESSION:
@@ -59,16 +61,20 @@ def main() -> None:
         n, a = out["naive"], out["trial_adjusted"]
         print(f"  {len(ids)}. {expr}  [{freq}]")
         print(f"     naive Sharpe {n['sharpe']:.2f}, trials {a['trials_so_far']}, "
-              f"hurdle {a['hurdle_sharpe_annual']:.2f}, DSR {a['deflated_sharpe_ratio']:.3f}, "
-              f"analytic hurdle {a['hurdle_sharpe_annual_analytic']:.2f}, "
-              f"analytic DSR {a['deflated_sharpe_ratio_analytic']:.3f}")
+              f"effective trials {a['effective_independent_trials']}, "
+              f"DSR effective {a['deflated_sharpe_ratio_effective']:.3f}, "
+              f"analytic {a['deflated_sharpe_ratio_analytic']:.3f}, "
+              f"trial spread {a['deflated_sharpe_ratio_trial_spread']:.3f}")
 
     board = gw.leaderboard(top=len(SESSION))
-    print(f"\nLeaderboard: {board['n_trials']} trials, PBO {board['probability_of_backtest_overfitting']}, "
+    print(f"\nLeaderboard: {board['n_trials']} trials ({board['effective_independent_trials']} effective), "
+          f"PBO {board['probability_of_backtest_overfitting']}, "
           f"{board['n_significant_after_fdr']} significant after BH (one-sided)")
     for row in board["top"]:
-        print(f"  {row['expression']}: naive {row['naive_sharpe']:.2f}, DSR {row['deflated_sharpe_ratio']:.3f}, "
-              f"analytic DSR {row['deflated_sharpe_ratio_analytic']:.3f}, "
+        print(f"  {row['expression']}: naive {row['naive_sharpe']:.2f}, "
+              f"DSR effective {row['deflated_sharpe_ratio_effective']:.3f}, "
+              f"analytic {row['deflated_sharpe_ratio_analytic']:.3f}, "
+              f"trial spread {row['deflated_sharpe_ratio_trial_spread']:.3f}, "
               f"BH {row['significant_after_fdr']}, haircut {row['haircut_sharpe']:.2f}")
 
     ho = gw.evaluate_holdout(ids[HOLDOUT_PICK])

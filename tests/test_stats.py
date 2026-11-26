@@ -234,3 +234,59 @@ def test_systematic_dispersion_inflates_empirical_hurdle_only():
     assert s["hurdle_sharpe_annual"] > 2 * s["hurdle_sharpe_annual_analytic"]
     best = ev.table.iloc[0]
     assert best["dsr_analytic"] > 0.95 > best["dsr"]
+
+
+# ---------------------------------------------------------------- effective number of trials
+
+
+def test_effective_trials_independent_and_identical():
+    from alphaledger.stats import effective_trials
+
+    rng = np.random.default_rng(11)
+    ind = pd.DataFrame(rng.normal(0, 0.01, (1500, 50)))
+    assert effective_trials(ind) == pytest.approx(50, rel=0.1)
+    base = rng.normal(0, 0.01, (1500, 1))
+    same = pd.DataFrame(base + rng.normal(0, 0.0001, (1500, 50)))
+    assert effective_trials(same) < 1.1
+
+
+def test_effective_trials_two_clusters():
+    from alphaledger.stats import effective_trials
+
+    rng = np.random.default_rng(12)
+    a, b = rng.normal(0, 0.01, (1500, 1)), rng.normal(0, 0.01, (1500, 1))
+    x = np.hstack([a + rng.normal(0, 0.001, (1500, 20)), b + rng.normal(0, 0.001, (1500, 20))])
+    assert 1.8 < effective_trials(pd.DataFrame(x)) < 2.3
+
+
+def test_parameter_sweep_gets_lower_hurdle_than_raw_count():
+    rng = np.random.default_rng(13)
+    base = rng.normal(0, 0.01, (1500, 1))
+    x = base + rng.normal(0, 0.003, (1500, 40))  # 40 tweaks of one idea
+    x[:, 0] = x[:, 0] - x[:, 0].mean() + 0.0010  # the best tweak has a real edge
+    ev = evaluate(_ledger_from_matrix(x))
+    s = ev.summary()
+    assert s["n_effective_trials"] < 5
+    assert s["hurdle_sharpe_annual_effective"] < s["hurdle_sharpe_annual_analytic"]
+    assert s["best_dsr_effective"] >= s["best_dsr_analytic"]
+
+
+def test_effective_trials_cannot_be_lowered_by_padding_with_copies():
+    from alphaledger.stats import correlation_clusters, effective_trials, participation_ratio
+
+    rng = np.random.default_rng(14)
+    ind = rng.normal(0, 0.01, (1500, 3))
+    padded = np.hstack([ind, ind[:, [0]] + rng.normal(0, 0.001, (1500, 100))])
+    df = pd.DataFrame(padded)
+    assert participation_ratio(df) < 1.5  # the spectral estimate alone is gameable
+    assert correlation_clusters(df) == 3
+    assert effective_trials(df) >= 3
+    assert effective_trials(df) >= effective_trials(pd.DataFrame(ind)) - 0.5
+
+
+def test_clusters_on_known_blocks():
+    from alphaledger.stats import correlation_clusters
+
+    rng = np.random.default_rng(15)
+    blocks = [rng.normal(0, 0.01, (1500, 1)) + rng.normal(0, 0.003, (1500, k)) for k in (5, 7, 3)]
+    assert correlation_clusters(pd.DataFrame(np.hstack(blocks))) == 3

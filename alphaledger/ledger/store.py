@@ -22,6 +22,8 @@ identical spec is logged but does not add a new trial.
 from __future__ import annotations
 
 import hashlib
+import hmac
+import os
 import json
 import math
 import sqlite3
@@ -45,7 +47,8 @@ CREATE TABLE IF NOT EXISTS entries (
     parent_id     TEXT,
     payload       TEXT NOT NULL,
     prev_hash     TEXT NOT NULL,
-    hash          TEXT NOT NULL UNIQUE
+    hash          TEXT NOT NULL UNIQUE,
+    sig           TEXT
 );
 CREATE TRIGGER IF NOT EXISTS entries_no_update BEFORE UPDATE ON entries
 BEGIN SELECT RAISE(ABORT, 'ledger is append-only'); END;
@@ -125,14 +128,53 @@ class VerifyReport:
 
 
 # ---------------------------------------------------------------- ledger
+def returns_hash(r: pd.Series) -> str:
+    """Fingerprint of a return series, used to spot identical portfolios.
+
+    Values are rounded to 1e-12 so that float noise from algebraically equal
+    expressions (``x`` and ``x * 1``) does not create a new trial.
+    """
+    r = pd.Series(r).dropna()
+    body = canonical({"d": [d.strftime("%Y-%m-%d") for d in pd.DatetimeIndex(r.index)],
+                      "v": [round(float(x), 12) + 0.0 for x in r.to_numpy()]})
+    return sha256(body)
+
+
+def load_key(value: str | bytes | None = None, env: str = "ALPHALEDGER_KEY") -> bytes | None:
+    """Signing key from an explicit value or an environment variable."""
+    if value is None:
+        value = os.environ.get(env)
+    if value is None or value == "":
+        return None
+    return value if isinstance(value, bytes) else value.encode()
+
+
 class Ledger:
-    def __init__(self, path: str | Path = ":memory:", clock=None):
+    """Append-only, hash-chained, optionally signed hypothesis ledger.
+
+    ``key``: with a secret key every entry also carries an HMAC of its hash.
+    Without the key, someone who rewrites the file can recompute every hash and
+    the chain alone will still verify; with the key they cannot forge the
+    signatures. Keep the key outside the agent's reach (an environment variable
+    of the server process, a secrets manager).
+    """
+
+    def __init__(self, path: str | Path = ":memory:", clock=None, key: str | bytes | None = None):
         self.path = str(path)
         # Servers call tools from worker threads; appends are serialized by a lock.
         self.conn = sqlite3.connect(self.path, check_same_thread=False)
         self._lock = threading.RLock()
         self.conn.executescript(SCHEMA)
+        cols = {r[1] for r in self.conn.execute("PRAGMA table_info(entries)")}
+        if "sig" not in cols:  # ledgers created before signing existed
+            self.conn.execute("ALTER TABLE entries ADD COLUMN sig TEXT")
+        self._key = key if isinstance(key, (bytes, type(None))) else key.encode()
         self._clock = clock or (lambda: datetime.now(timezone.utc).isoformat(timespec="microseconds"))
+        self._reset_cache()
+
+    @property
+    def signed(self) -> bool:
+        return self._key is not None
 
     def close(self) -> None:
         self.conn.close()
@@ -143,7 +185,52 @@ class Ledger:
     def __exit__(self, *exc):
         self.close()
 
+    # ------------------------------------------------------------ cache
+    # Queries are served from an in-memory index that is synced incrementally
+    # from the database, so cost per query does not grow with every reparse.
+    def _reset_cache(self) -> None:
+        self._last_seq = 0
+        self._hyp: dict[str, dict] = {}  # hid -> hypothesis record
+        self._hyp_order: list[str] = []
+        self._first_spec: dict[str, str] = {}
+        self._results: dict[str, dict] = {}  # hid -> latest result record
+        self._notes: list[dict] = []
+
+    def _sync(self) -> None:
+        with self._lock:
+            rows = self.conn.execute(
+                "SELECT seq, ts, kind, hypothesis_id, parent_id, payload FROM entries"
+                " WHERE seq > ? ORDER BY seq", (self._last_seq,)
+            ).fetchall()
+            for seq, ts, kind, hid, pid, payload in rows:
+                self._ingest(seq, ts, kind, hid, pid, json.loads(payload))
+
+    def _ingest(self, seq, ts, kind, hid, pid, p) -> None:
+        if seq <= self._last_seq:
+            return
+        self._last_seq = seq
+        if kind == "hypothesis":
+            self._hyp[hid] = {"hypothesis_id": hid, "parent_id": pid, "seq": seq, "ts": ts,
+                              "spec_hash": p["spec_hash"], "author": p["author"],
+                              "duplicate_of": p["duplicate_of"], "spec": p["spec"],
+                              "rationale": p.get("rationale", "")}
+            self._hyp_order.append(hid)
+            self._first_spec.setdefault(p["spec_hash"], hid)
+        elif kind == "result":
+            rec = {"seq": seq, "status": p["status"], "data_hash": p["data_hash"],
+                   "stats": p["stats"] or {}, "returns_hash": p.get("returns_hash"),
+                   "returns": None}
+            if "returns" in p:
+                rec["returns"] = pd.Series(p["returns"]["values"],
+                                           index=pd.to_datetime(p["returns"]["dates"]), dtype=float)
+            self._results[hid] = rec
+        else:
+            self._notes.append({"seq": seq, "hypothesis_id": hid, **p})
+
     # ------------------------------------------------------------ low level
+    def _sign(self, h: str) -> str | None:
+        return hmac.new(self._key, h.encode(), hashlib.sha256).hexdigest() if self._key else None
+
     def _append(self, kind: str, payload: dict, hypothesis_id=None, parent_id=None) -> dict:
         if kind not in KINDS:
             raise ValueError(f"kind must be one of {KINDS}")
@@ -157,35 +244,51 @@ class Ledger:
             ts = self._clock()
             h = entry_hash(seq, ts, kind, hypothesis_id, parent_id, payload_json, prev)
             self.conn.execute(
-                "INSERT INTO entries (seq, ts, kind, hypothesis_id, parent_id, payload, prev_hash, hash)"
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                (seq, ts, kind, hypothesis_id, parent_id, payload_json, prev, h),
+                "INSERT INTO entries (seq, ts, kind, hypothesis_id, parent_id, payload, prev_hash, hash, sig)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (seq, ts, kind, hypothesis_id, parent_id, payload_json, prev, h, self._sign(h)),
             )
+        self._sync()
         return {"seq": seq, "ts": ts, "hash": h}
 
     def entries(self) -> pd.DataFrame:
-        df = pd.read_sql_query("SELECT * FROM entries ORDER BY seq", self.conn)
-        return df
+        return pd.read_sql_query("SELECT * FROM entries ORDER BY seq", self.conn)
+
+    def head(self) -> tuple[int, str]:
+        row = self.conn.execute("SELECT seq, hash FROM entries ORDER BY seq DESC LIMIT 1").fetchone()
+        return (0, GENESIS) if row is None else (int(row[0]), row[1])
 
     def head_hash(self) -> str:
-        row = self.conn.execute("SELECT hash FROM entries ORDER BY seq DESC LIMIT 1").fetchone()
-        return GENESIS if row is None else row[0]
+        return self.head()[1]
 
-    def verify(self, expected_head: str | None = None) -> VerifyReport:
-        """Recompute the whole chain. Optionally check it ends at a published head hash."""
+    # ------------------------------------------------------------ verification
+    def verify(self, expected_head: str | None = None, require_signatures: bool | None = None) -> VerifyReport:
+        """Recompute the whole chain from the database (never from the cache).
+
+        If the ledger was opened with a key, every entry's signature is checked
+        too, and an unsigned entry is an error. ``expected_head`` checks the
+        chain against a head hash published elsewhere.
+        """
+        if require_signatures is None:
+            require_signatures = self.signed
         rows = self.conn.execute(
-            "SELECT seq, ts, kind, hypothesis_id, parent_id, payload, prev_hash, hash"
+            "SELECT seq, ts, kind, hypothesis_id, parent_id, payload, prev_hash, hash, sig"
             " FROM entries ORDER BY seq"
         ).fetchall()
         prev = GENESIS
         expected_seq = 1
-        for seq, ts, kind, hid, pid, payload, prev_hash, h in rows:
+        for seq, ts, kind, hid, pid, payload, prev_hash, h, sig in rows:
             if seq != expected_seq:
                 return VerifyReport(False, len(rows), expected_seq, f"missing entry {expected_seq}")
             if prev_hash != prev:
                 return VerifyReport(False, len(rows), seq, "prev_hash does not match previous entry")
             if entry_hash(seq, ts, kind, hid, pid, payload, prev_hash) != h:
                 return VerifyReport(False, len(rows), seq, "entry content does not match its hash")
+            if require_signatures:
+                if not self.signed:
+                    return VerifyReport(False, len(rows), seq, "signatures required but no key given")
+                if sig is None or not hmac.compare_digest(sig, self._sign(h)):
+                    return VerifyReport(False, len(rows), seq, "signature missing or invalid")
             prev = h
             expected_seq += 1
         if expected_head is not None and prev != expected_head:
@@ -199,6 +302,47 @@ class Ledger:
             return VerifyReport(expected_head in known, len(rows), None, reason)
         return VerifyReport(True, len(rows))
 
+    # ------------------------------------------------------------ anchoring
+    def anchor(self, anchor_path: str | Path, name: str) -> dict:
+        """Append the current head to an external, append-only anchor file.
+
+        Keep the anchor file somewhere the agent cannot write (a git repository
+        that gets pushed, a different machine, a WORM bucket). Any later rewrite
+        of the ledger up to an anchored entry changes that entry's hash, and
+        ``verify_anchors`` reports it, with or without a signing key.
+        """
+        seq, h = self.head()
+        rec = {"name": name, "seq": seq, "hash": h, "ts": self._clock()}
+        with open(anchor_path, "a") as f:
+            f.write(canonical(rec) + "\n")
+        return rec
+
+    def verify_anchors(self, anchor_path: str | Path, name: str) -> VerifyReport:
+        base = self.verify()
+        if not base.ok:
+            return base
+        hashes = dict(self.conn.execute("SELECT seq, hash FROM entries").fetchall())
+        n = 0
+        with open(anchor_path) as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                rec = json.loads(line)
+                if rec.get("name") != name:
+                    continue
+                n += 1
+                if rec["seq"] == 0:
+                    continue
+                if rec["seq"] not in hashes:
+                    return VerifyReport(False, base.n_entries, rec["seq"],
+                                        f"anchored entry {rec['seq']} is missing (history truncated)")
+                if hashes[rec["seq"]] != rec["hash"]:
+                    return VerifyReport(False, base.n_entries, rec["seq"],
+                                        f"entry {rec['seq']} differs from its anchor (history rewritten)")
+        if n == 0:
+            return VerifyReport(False, base.n_entries, None, f"no anchors named {name!r}")
+        return VerifyReport(True, base.n_entries, None, f"{n} anchors match")
+
     # ------------------------------------------------------------ hypotheses
     def register(self, spec: dict, parent_id: str | None = None, author: str = "agent",
                  rationale: str = "") -> str:
@@ -206,40 +350,55 @@ class Ledger:
 
         ``spec`` should fully describe the signal (formula or code reference,
         parameters, universe, data fields). The id is derived from the spec
-        hash plus the entry hash, so two registrations never share an id.
+        hash plus the sequence number, so two registrations never share an id.
         """
         if not isinstance(spec, dict) or not spec:
             raise ValueError("spec must be a non-empty dict")
-        if parent_id is not None and not self._exists(parent_id):
-            raise LedgerError(f"unknown parent hypothesis {parent_id}")
-        sh = spec_hash(spec)
-        duplicate_of = self._first_with_spec(sh)
-        payload = {
-            "spec": spec,
-            "spec_hash": sh,
-            "author": author,
-            "rationale": rationale,
-            "duplicate_of": duplicate_of,
-        }
-        # The id must be known before the hash, so derive it from spec hash and sequence.
-        nxt = self.conn.execute("SELECT COALESCE(MAX(seq), 0) + 1 FROM entries").fetchone()[0]
-        hid = "h_" + sha256(f"{sh}:{nxt}")[:12]
-        self._append("hypothesis", payload, hypothesis_id=hid, parent_id=parent_id)
+        with self._lock:
+            self._sync()
+            if parent_id is not None and parent_id not in self._hyp:
+                raise LedgerError(f"unknown parent hypothesis {parent_id}")
+            sh = spec_hash(spec)
+            payload = {
+                "spec": spec,
+                "spec_hash": sh,
+                "author": author,
+                "rationale": rationale,
+                "duplicate_of": self._first_spec.get(sh),
+            }
+            hid = "h_" + sha256(f"{sh}:{self.head()[0] + 1}")[:12]
+            self._append("hypothesis", payload, hypothesis_id=hid, parent_id=parent_id)
         return hid
 
     def record(self, hypothesis_id: str, stats: dict, returns: pd.Series | None = None,
-               data_hash: str | None = None, status: str = "ok", error: str = "") -> None:
-        """Record the outcome of testing a hypothesis (also for failed runs)."""
-        if not self._exists(hypothesis_id):
-            raise LedgerError(f"unknown hypothesis {hypothesis_id}")
-        payload = {"stats": stats, "status": status, "error": error, "data_hash": data_hash}
-        if returns is not None:
-            r = pd.Series(returns).dropna()
-            payload["returns"] = {
-                "dates": [d.strftime("%Y-%m-%d") for d in pd.DatetimeIndex(r.index)],
-                "values": [float(x) for x in r.to_numpy()],
-            }
-        self._append("result", payload, hypothesis_id=hypothesis_id)
+               data_hash: str | None = None, status: str = "ok", error: str = "") -> dict:
+        """Record the outcome of testing a hypothesis (also for failed runs).
+
+        Returns {"duplicate_portfolio_of": hid or None}: an earlier hypothesis
+        whose recorded returns are identical, i.e. the same portfolio.
+        """
+        with self._lock:
+            self._sync()
+            if hypothesis_id not in self._hyp:
+                raise LedgerError(f"unknown hypothesis {hypothesis_id}")
+            payload = {"stats": stats, "status": status, "error": error, "data_hash": data_hash}
+            same = None
+            if returns is not None:
+                r = pd.Series(returns).dropna()
+                payload["returns"] = {
+                    "dates": [d.strftime("%Y-%m-%d") for d in pd.DatetimeIndex(r.index)],
+                    "values": [float(x) for x in r.to_numpy()],
+                }
+                rh = returns_hash(r)
+                payload["returns_hash"] = rh
+                for hid in self._hyp_order:
+                    res = self._results.get(hid)
+                    if hid != hypothesis_id and res and res["returns_hash"] == rh:
+                        same = hid
+                        break
+            payload["duplicate_portfolio_of"] = same
+            self._append("result", payload, hypothesis_id=hypothesis_id)
+        return {"duplicate_portfolio_of": same}
 
     def note(self, text: str, hypothesis_id: str | None = None, data: dict | None = None) -> None:
         payload = {"text": text}
@@ -248,33 +407,14 @@ class Ledger:
         self._append("note", payload, hypothesis_id=hypothesis_id)
 
     # ------------------------------------------------------------ queries
-    def _exists(self, hid: str) -> bool:
-        return self.conn.execute(
-            "SELECT 1 FROM entries WHERE kind='hypothesis' AND hypothesis_id=? LIMIT 1", (hid,)
-        ).fetchone() is not None
-
-    def _first_with_spec(self, sh: str) -> str | None:
-        for hid, payload in self.conn.execute(
-            "SELECT hypothesis_id, payload FROM entries WHERE kind='hypothesis' ORDER BY seq"
-        ):
-            if json.loads(payload)["spec_hash"] == sh:
-                return hid
-        return None
+    def notes(self) -> list[dict]:
+        self._sync()
+        return list(self._notes)
 
     def hypotheses(self) -> pd.DataFrame:
-        rows = []
-        for seq, ts, hid, pid, payload in self.conn.execute(
-            "SELECT seq, ts, hypothesis_id, parent_id, payload FROM entries"
-            " WHERE kind='hypothesis' ORDER BY seq"
-        ):
-            p = json.loads(payload)
-            rows.append({
-                "hypothesis_id": hid, "parent_id": pid, "seq": seq, "ts": ts,
-                "spec_hash": p["spec_hash"], "author": p["author"],
-                "duplicate_of": p["duplicate_of"], "spec": p["spec"],
-            })
-        df = pd.DataFrame(rows, columns=["hypothesis_id", "parent_id", "seq", "ts", "spec_hash",
-                                         "author", "duplicate_of", "spec"])
+        self._sync()
+        cols = ["hypothesis_id", "parent_id", "seq", "ts", "spec_hash", "author", "duplicate_of", "spec"]
+        df = pd.DataFrame([{k: self._hyp[h][k] for k in cols} for h in self._hyp_order], columns=cols)
         # Keep missing links as None. pandas may turn None into NaN, and NaN is
         # truthy, which silently breaks "duplicate_of or hypothesis_id" lookups.
         for col in ("parent_id", "duplicate_of"):
@@ -283,66 +423,76 @@ class Ledger:
 
     def results(self) -> pd.DataFrame:
         """Latest result per hypothesis, with stats expanded into columns."""
-        rows = []
-        for seq, hid, payload in self.conn.execute(
-            "SELECT seq, hypothesis_id, payload FROM entries WHERE kind='result' ORDER BY seq"
-        ):
-            p = json.loads(payload)
-            rows.append({"hypothesis_id": hid, "result_seq": seq, "status": p["status"],
-                         "data_hash": p["data_hash"], **(p["stats"] or {})})
+        self._sync()
+        rows = [{"hypothesis_id": h, "result_seq": r["seq"], "status": r["status"],
+                 "data_hash": r["data_hash"], "returns_hash": r["returns_hash"], **r["stats"]}
+                for h, r in self._results.items()]
         if not rows:
-            return pd.DataFrame(columns=["hypothesis_id", "result_seq", "status", "data_hash"])
-        df = pd.DataFrame(rows)
-        return df.groupby("hypothesis_id", as_index=False).last()
+            return pd.DataFrame(columns=["hypothesis_id", "result_seq", "status", "data_hash", "returns_hash"])
+        return pd.DataFrame(rows)
 
     def trials(self) -> pd.DataFrame:
         """Every hypothesis with its latest result (NaN where never tested)."""
         h = self.hypotheses().drop(columns=["spec"])
         return h.merge(self.results(), on="hypothesis_id", how="left")
 
+    def _trial_key(self, hid: str) -> str:
+        r = self._results[hid]
+        if r["status"] in ("ok", "leak") and r["returns_hash"]:
+            return "r:" + r["returns_hash"]  # same portfolio, same trial
+        return "s:" + self._hyp[hid]["spec_hash"]
+
     def n_trials(self) -> int:
-        """Distinct specs that have at least one recorded result (any status)."""
-        t = self.trials()
-        tested = t[t["result_seq"].notna()]
-        return int(tested["spec_hash"].nunique())
+        """Distinct tested portfolios (failed runs counted by distinct spec).
+
+        Identical specs count once, and so do different expressions that
+        produce exactly the same returns (``x``, ``x * 1``, ``rank(rank(x))``).
+        Correlated but different trials still count separately; the effective
+        number of independent trials is estimated in ``stats.evaluate``.
+        """
+        self._sync()
+        return len({self._trial_key(h) for h in self._results})
 
     def returns_matrix(self, status: str = "ok") -> pd.DataFrame:
         """Dates x hypotheses matrix of recorded daily returns (latest result each).
 
-        This is the input the Week 3 stats engine needs (PBO, deflated Sharpe).
-        Duplicate specs are collapsed to their first registration.
+        One column per distinct portfolio, named after the first hypothesis
+        that produced it.
         """
-        h = self.hypotheses().set_index("hypothesis_id")
-        cols = {}
-        for hid, payload in self.conn.execute(
-            "SELECT hypothesis_id, payload FROM entries WHERE kind='result' ORDER BY seq"
-        ):
-            p = json.loads(payload)
-            if p["status"] != status or "returns" not in p:
+        self._sync()
+        cols, seen = {}, set()
+        for hid in self._hyp_order:
+            r = self._results.get(hid)
+            if r is None or r["status"] != status or r["returns"] is None:
                 continue
-            dup = h.loc[hid, "duplicate_of"]
-            canonical_id = dup if isinstance(dup, str) else hid
-            cols[canonical_id] = pd.Series(
-                p["returns"]["values"], index=pd.to_datetime(p["returns"]["dates"])
-            )
+            key = self._trial_key(hid)
+            if key in seen:
+                continue
+            seen.add(key)
+            cols[hid] = r["returns"]
         return pd.DataFrame(cols).sort_index()
+
+    def canonical_id(self, hid: str) -> str:
+        """First hypothesis that produced the same trial (itself if none)."""
+        self._sync()
+        if hid not in self._results:
+            return hid
+        key = self._trial_key(hid)
+        for h in self._hyp_order:
+            if h in self._results and self._trial_key(h) == key:
+                return h
+        return hid
 
     def lineage(self, hypothesis_id: str) -> list[str]:
         """Ancestors from the root down to ``hypothesis_id``."""
-        parents = dict(
-            self.conn.execute(
-                "SELECT hypothesis_id, parent_id FROM entries WHERE kind='hypothesis'"
-            ).fetchall()
-        )
-        if hypothesis_id not in parents:
+        self._sync()
+        if hypothesis_id not in self._hyp:
             raise LedgerError(f"unknown hypothesis {hypothesis_id}")
         chain = [hypothesis_id]
-        while parents.get(chain[-1]) is not None:
-            chain.append(parents[chain[-1]])
+        while self._hyp[chain[-1]]["parent_id"] is not None:
+            chain.append(self._hyp[chain[-1]]["parent_id"])
         return chain[::-1]
 
     def children(self, hypothesis_id: str) -> list[str]:
-        return [r[0] for r in self.conn.execute(
-            "SELECT hypothesis_id FROM entries WHERE kind='hypothesis' AND parent_id=? ORDER BY seq",
-            (hypothesis_id,),
-        )]
+        self._sync()
+        return [h for h in self._hyp_order if self._hyp[h]["parent_id"] == hypothesis_id]

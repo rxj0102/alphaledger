@@ -81,7 +81,7 @@ def _fmt(x, nd=2):
     return f"{x:.{nd}f}"
 
 
-def _scatter(tab: pd.DataFrame, hurdle: float, w: int = 960, h: int = 340, ycol: str = "dsr_analytic") -> str:
+def _scatter(tab: pd.DataFrame, hurdle: float, w: int = 960, h: int = 340, ycol: str = "dsr_effective") -> str:
     pad_l, pad_r, pad_t, pad_b = 56, 16, 16, 40
     xs = tab["sr_annual"].to_numpy()
     lo = min(xs.min(), 0.0, hurdle) - 0.1
@@ -94,14 +94,14 @@ def _scatter(tab: pd.DataFrame, hurdle: float, w: int = 960, h: int = 340, ycol:
         return pad_t + (1 - v) * (h - pad_t - pad_b)
 
     parts = [f'<svg viewBox="0 0 {w} {h}" width="100%" role="img" '
-             f'aria-label="Naive Sharpe against analytic deflated Sharpe ratio for each trial">']
+             f'aria-label="Naive Sharpe against effective deflated Sharpe ratio for each trial">']
     for yv in (0, 0.5, 0.95):
         dash = ' stroke-dasharray="4 4"' if yv == 0.95 else ""
         parts.append(f'<line x1="{pad_l}" x2="{w - pad_r}" y1="{Y(yv):.1f}" y2="{Y(yv):.1f}" '
                      f'stroke="var(--grid)"{dash}/>')
         parts.append(f'<text x="{pad_l - 6}" y="{Y(yv) + 4:.1f}" text-anchor="end">{yv:g}</text>')
     parts.append(f'<text transform="translate(12 {(h - pad_b + pad_t) / 2:.0f}) rotate(-90)" '
-                 f'text-anchor="middle">DSR, analytic null</text>')
+                 f'text-anchor="middle">DSR, effective trials</text>')
     step = 0.5 if hi - lo < 4 else 1.0
     v = math.ceil(lo / step) * step
     while v <= hi:
@@ -111,12 +111,12 @@ def _scatter(tab: pd.DataFrame, hurdle: float, w: int = 960, h: int = 340, ycol:
                  f'stroke="var(--text-secondary)" stroke-dasharray="2 3"/>')
     right = X(hurdle) > w - 140
     parts.append(f'<text x="{X(hurdle) + (-4 if right else 4):.1f}" y="{pad_t + 10}" '
-                 f'text-anchor="{"end" if right else "start"}">analytic hurdle Sharpe {hurdle:.2f}</text>')
+                 f'text-anchor="{"end" if right else "start"}">hurdle Sharpe {hurdle:.2f}</text>')
     parts.append(f'<text x="{(w + pad_l) / 2:.0f}" y="{h - 4}" text-anchor="middle">naive annual Sharpe</text>')
     for hid, r in tab.iterrows():
         color = "var(--series-2)" if r["sig_bh"] else "var(--series-1)"
         tip = html.escape(f"{r['label']}\nnaive Sharpe {r['sr_annual']:.2f}\nDSR {r['dsr']:.3f}\n"
-                          f"DSR analytic {r['dsr_analytic']:.3f}\nBH significant: {bool(r['sig_bh'])}\n{hid}")
+                          f"DSR effective {r['dsr_effective']:.3f}\nBH significant: {bool(r['sig_bh'])}\n{hid}")
         parts.append(f'<circle class="pt" cx="{X(r["sr_annual"]):.1f}" cy="{Y(r[ycol]):.1f}" r="5" '
                      f'fill="{color}"><title>{tip}</title></circle>')
     parts.append("</svg>")
@@ -136,30 +136,33 @@ def build_report(ledger: Ledger, title: str = "alphaledger report", top: int = 2
         tiles = [
             ("Trials counted", str(s["n_trials"]), "includes failed and leaky runs"),
             ("Best naive Sharpe", _fmt(s["best_naive_sharpe"]), "annualized, in sample"),
-            ("Hurdle Sharpe", f'{_fmt(s["hurdle_sharpe_annual"])} / {_fmt(s["hurdle_sharpe_annual_analytic"])}',
-             f"best expected from {s['n_trials']} zero-skill trials (trial spread / analytic)"),
-            ("Best deflated Sharpe ratio", f'{_fmt(s["best_dsr"], 3)} / {_fmt(s["best_dsr_analytic"], 3)}',
-             "trial spread / analytic null; 0.95 or more is convincing"),
+            ("Effective trials", _fmt(s["n_effective_trials"], 1), "independent trials after correlation"),
+            ("Hurdle Sharpe", _fmt(s["hurdle_sharpe_annual_effective"]),
+             f"effective; analytic {_fmt(s['hurdle_sharpe_annual_analytic'])}, "
+             f"trial spread {_fmt(s['hurdle_sharpe_annual'])}"),
+            ("Best deflated Sharpe ratio", _fmt(s["best_dsr_effective"], 3),
+             f"effective; analytic {_fmt(s['best_dsr_analytic'], 3)}, trial spread {_fmt(s['best_dsr'], 3)}; "
+             "0.95 or more is convincing"),
             ("Significant after BH", f"{s['n_significant_bh']}",
              f"{s['n_significant_raw']} before correction, one-sided"),
             ("PBO", _fmt(s["pbo"]), "probability of backtest overfitting"),
         ] + tiles
-        body.append("<h2>Naive Sharpe against deflated Sharpe ratio (analytic null)</h2>")
+        body.append("<h2>Naive Sharpe against deflated Sharpe ratio (effective trials)</h2>")
         body.append('<div class="legend"><span><span class="sw" style="background:var(--series-1)"></span>'
                     'not significant after BH</span><span><span class="sw" style="background:var(--series-2)">'
                     '</span>significant after BH (one-sided)</span><span>dashed line: DSR 0.95</span></div>')
-        body.append(_scatter(tab, s["hurdle_sharpe_annual_analytic"]))
+        body.append(_scatter(tab, s["hurdle_sharpe_annual_effective"]))
         rows = []
         for hid, r in tab.head(top).iterrows():
             rows.append(
                 f"<tr><td><code>{html.escape(r['label'])}</code><br><span class='sub'>{hid}</span></td>"
                 f"<td class='num'>{_fmt(r['sr_annual'])}</td><td class='num'>{_fmt(r['dsr'], 3)}</td>"
-                f"<td class='num'>{_fmt(r['dsr_analytic'], 3)}</td>"
+                f"<td class='num'>{_fmt(r['dsr_analytic'], 3)}</td><td class='num'>{_fmt(r['dsr_effective'], 3)}</td>"
                 f"<td class='num'>{_fmt(r['p_bh'], 3)}</td><td class='num'>{_fmt(r['sr_haircut_holm'])}</td>"
                 f"<td class='num'>{int(r['t_obs'])}</td></tr>")
         body.append(f"<h2>Leaderboard (top {min(top, len(tab))} of {len(tab)} by naive Sharpe)</h2>")
-        body.append("<table><tr><th>Hypothesis</th><th class='num'>Naive Sharpe</th><th class='num'>DSR</th>"
-                    "<th class='num'>DSR analytic</th>"
+        body.append("<table><tr><th>Hypothesis</th><th class='num'>Naive Sharpe</th><th class='num'>DSR trial spread</th>"
+                    "<th class='num'>DSR analytic</th><th class='num'>DSR effective</th>"
                     "<th class='num'>BH p</th><th class='num'>Haircut Sharpe</th><th class='num'>Days</th></tr>"
                     + "".join(rows) + "</table>")
     tiles_html = "".join(f"<div class='tile'><div class='k'>{k}</div><div class='v'>{v}</div>"

@@ -94,3 +94,24 @@ def test_metrics_by_hand():
     r = pd.Series([0.01, -0.01, 0.02, 0.0])
     expected = r.mean() / r.std(ddof=1) * np.sqrt(252)
     assert sharpe(r) == pytest.approx(expected)
+
+
+def test_delisting_return_applied_once_and_position_closed():
+    idx = pd.bdate_range("2024-01-01", periods=6)
+    r = pd.DataFrame({"A": [0.01, 0.01, 0.01, None, None, None], "B": [0.0] * 6}, index=idx)
+    w = pd.DataFrame({"A": [1.0] * 6, "B": [0.0] * 6}, index=idx)
+    res = run_backtest(w, r, lag=1)
+    # Held A from day 2; A stops trading after day 3, so day 4 takes -30%, then nothing.
+    assert res.returns.tolist() == pytest.approx([0.01, 0.01, -0.30, 0.0, 0.0])
+    assert res.delistings == 1
+    zero = run_backtest(w, r, lag=1, delist_return=None)
+    assert zero.returns.tolist() == pytest.approx([0.01, 0.01, 0.0, 0.0, 0.0])
+
+
+def test_interior_gap_is_not_a_delisting():
+    idx = pd.bdate_range("2024-01-01", periods=5)
+    r = pd.DataFrame({"A": [0.01, None, 0.02, 0.01, 0.01]}, index=idx)
+    w = pd.DataFrame({"A": [1.0] * 5}, index=idx)
+    res = run_backtest(w, r, lag=1)
+    assert res.delistings == 0
+    assert res.returns.tolist() == pytest.approx([0.0, 0.02, 0.01, 0.01])

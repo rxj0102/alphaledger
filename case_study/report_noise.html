@@ -22,994 +22,994 @@ code { font-size: 12px; } .badge { display:inline-block; padding: 1px 8px; borde
 .sw { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:-1px; }
 svg text { fill: var(--text-secondary); font-size: 11px; }
 .pt { stroke: var(--surface-1); stroke-width: 2; } .pt:hover { stroke: var(--text-primary); }
-</style></head><body class='viz-root'><div class='wrap'><h1>Blind sweep agent, 200 trials, synthetic noise market</h1><div class='sub'>Every number is computed from the ledger. Sharpe ratios are annualized. DSR, BH and haircut account for every trial, including failures.</div><div class='tiles'><div class='tile'><div class='k'>Trials counted</div><div class='v'>200</div><div class='n'>includes failed and leaky runs</div></div><div class='tile'><div class='k'>Best naive Sharpe</div><div class='v'>0.68</div><div class='n'>annualized, in sample</div></div><div class='tile'><div class='k'>Hurdle Sharpe</div><div class='v'>1.89 / 1.12</div><div class='n'>best expected from 200 zero-skill trials (trial spread / analytic)</div></div><div class='tile'><div class='k'>Best deflated Sharpe ratio</div><div class='v'>0.001 / 0.147</div><div class='n'>trial spread / analytic null; 0.95 or more is convincing</div></div><div class='tile'><div class='k'>Significant after BH</div><div class='v'>0</div><div class='n'>1 before correction, one-sided</div></div><div class='tile'><div class='k'>PBO</div><div class='v'>0.33</div><div class='n'>probability of backtest overfitting</div></div><div class='tile'><div class='k'>Hypotheses logged</div><div class='v'>237</div><div class='n'>degenerate 2, ok 235</div></div><div class='tile'><div class='k'>Ledger chain</div><div class='v'><span class="ok">verified</span></div><div class='n'>475 entries, head 8a0475e6590f</div></div></div><h2>Naive Sharpe against deflated Sharpe ratio (analytic null)</h2><div class="legend"><span><span class="sw" style="background:var(--series-1)"></span>not significant after BH</span><span><span class="sw" style="background:var(--series-2)"></span>significant after BH (one-sided)</span><span>dashed line: DSR 0.95</span></div><svg viewBox="0 0 960 340" width="100%" role="img" aria-label="Naive Sharpe against analytic deflated Sharpe ratio for each trial"><line x1="56" x2="944" y1="300.0" y2="300.0" stroke="var(--grid)"/><text x="50" y="304.0" text-anchor="end">0</text><line x1="56" x2="944" y1="158.0" y2="158.0" stroke="var(--grid)"/><text x="50" y="162.0" text-anchor="end">0.5</text><line x1="56" x2="944" y1="30.2" y2="30.2" stroke="var(--grid)" stroke-dasharray="4 4"/><text x="50" y="34.2" text-anchor="end">0.95</text><text transform="translate(12 158) rotate(-90)" text-anchor="middle">DSR, analytic null</text><text x="76.3" y="316" text-anchor="middle">-5</text><text x="215.9" y="316" text-anchor="middle">-4</text><text x="355.4" y="316" text-anchor="middle">-3</text><text x="495.0" y="316" text-anchor="middle">-2</text><text x="634.6" y="316" text-anchor="middle">-1</text><text x="774.2" y="316" text-anchor="middle">0</text><text x="913.7" y="316" text-anchor="middle">1</text><line x1="930.0" x2="930.0" y1="16" y2="300" stroke="var(--text-secondary)" stroke-dasharray="2 3"/><text x="926.0" y="26" text-anchor="end">analytic hurdle Sharpe 1.12</text><text x="508" y="336" text-anchor="middle">naive annual Sharpe</text><circle class="pt" cx="869.4" cy="258.4" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 1))
-naive Sharpe 0.68
+</style></head><body class='viz-root'><div class='wrap'><h1>Blind sweep agent, 200 trials, synthetic noise market</h1><div class='sub'>Every number is computed from the ledger. Sharpe ratios are annualized. DSR, BH and haircut account for every trial, including failures.</div><div class='tiles'><div class='tile'><div class='k'>Trials counted</div><div class='v'>200</div><div class='n'>includes failed and leaky runs</div></div><div class='tile'><div class='k'>Best naive Sharpe</div><div class='v'>0.78</div><div class='n'>annualized, in sample</div></div><div class='tile'><div class='k'>Effective trials</div><div class='v'>60.0</div><div class='n'>independent trials after correlation</div></div><div class='tile'><div class='k'>Hurdle Sharpe</div><div class='v'>0.95</div><div class='n'>effective; analytic 1.12, trial spread 1.86</div></div><div class='tile'><div class='k'>Best deflated Sharpe ratio</div><div class='v'>0.348</div><div class='n'>effective; analytic 0.209, trial spread 0.003; 0.95 or more is convincing</div></div><div class='tile'><div class='k'>Significant after BH</div><div class='v'>0</div><div class='n'>2 before correction, one-sided</div></div><div class='tile'><div class='k'>PBO</div><div class='v'>0.48</div><div class='n'>probability of backtest overfitting</div></div><div class='tile'><div class='k'>Hypotheses logged</div><div class='v'>240</div><div class='n'>degenerate 2, ok 238</div></div><div class='tile'><div class='k'>Ledger chain</div><div class='v'><span class="ok">verified</span></div><div class='n'>482 entries, head d287ae97e62d</div></div></div><h2>Naive Sharpe against deflated Sharpe ratio (effective trials)</h2><div class="legend"><span><span class="sw" style="background:var(--series-1)"></span>not significant after BH</span><span><span class="sw" style="background:var(--series-2)"></span>significant after BH (one-sided)</span><span>dashed line: DSR 0.95</span></div><svg viewBox="0 0 960 340" width="100%" role="img" aria-label="Naive Sharpe against effective deflated Sharpe ratio for each trial"><line x1="56" x2="944" y1="300.0" y2="300.0" stroke="var(--grid)"/><text x="50" y="304.0" text-anchor="end">0</text><line x1="56" x2="944" y1="158.0" y2="158.0" stroke="var(--grid)"/><text x="50" y="162.0" text-anchor="end">0.5</text><line x1="56" x2="944" y1="30.2" y2="30.2" stroke="var(--grid)" stroke-dasharray="4 4"/><text x="50" y="34.2" text-anchor="end">0.95</text><text transform="translate(12 158) rotate(-90)" text-anchor="middle">DSR, effective trials</text><text x="92.5" y="316" text-anchor="middle">-4</text><text x="261.2" y="316" text-anchor="middle">-3</text><text x="429.9" y="316" text-anchor="middle">-2</text><text x="598.6" y="316" text-anchor="middle">-1</text><text x="767.3" y="316" text-anchor="middle">0</text><text x="936.0" y="316" text-anchor="middle">1</text><line x1="927.1" x2="927.1" y1="16" y2="300" stroke="var(--text-secondary)" stroke-dasharray="2 3"/><text x="923.1" y="26" text-anchor="end">hurdle Sharpe 0.95</text><text x="508" y="336" text-anchor="middle">naive annual Sharpe</text><circle class="pt" cx="898.6" cy="201.2" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 1))
+naive Sharpe 0.78
+DSR 0.003
+DSR effective 0.348
+BH significant: False
+h_7562f14342e6</title></circle><circle class="pt" cx="892.3" cy="221.2" r="5" fill="var(--series-1)"><title>0.7 * rank(momentum(189, 21)) - 0.3 * rank(ts_zscore(price, 126))
+naive Sharpe 0.74
+DSR 0.004
+DSR effective 0.278
+BH significant: False
+h_793f8672f38a</title></circle><circle class="pt" cx="867.8" cy="243.8" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 3))
+naive Sharpe 0.60
 DSR 0.001
-DSR analytic 0.147
+DSR effective 0.198
 BH significant: False
-h_47a5ae52f82e</title></circle><circle class="pt" cx="863.4" cy="270.1" r="5" fill="var(--series-1)"><title>0.7 * rank(momentum(189, 21)) - 0.3 * rank(ts_zscore(price, 126))
-naive Sharpe 0.64
-DSR 0.002
-DSR analytic 0.105
-BH significant: False
-h_16da686c7621</title></circle><circle class="pt" cx="862.2" cy="269.3" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 126))
-naive Sharpe 0.63
+h_02d0712b9af1</title></circle><circle class="pt" cx="862.3" cy="255.6" r="5" fill="var(--series-1)"><title>rank(momentum(189, 1))
+naive Sharpe 0.56
 DSR 0.001
-DSR analytic 0.108
+DSR effective 0.156
 BH significant: False
-h_da6af17dd62f</title></circle><circle class="pt" cx="860.1" cy="274.3" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(189, 21)) + 0.5 * rank(ts_zscore(price, 252))
-naive Sharpe 0.62
-DSR 0.002
-DSR analytic 0.090
-BH significant: False
-h_dd4928f23c65</title></circle><circle class="pt" cx="856.8" cy="275.2" r="5" fill="var(--series-1)"><title>rank(momentum(189, 1))
-naive Sharpe 0.59
+h_8fc6e7a5f9af</title></circle><circle class="pt" cx="860.8" cy="251.7" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 1))
+naive Sharpe 0.55
 DSR 0.001
-DSR analytic 0.087
+DSR effective 0.170
 BH significant: False
-h_66da05f186dc</title></circle><circle class="pt" cx="849.7" cy="278.1" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 10)) - 0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
-naive Sharpe 0.54
+h_9e0cdddeb132</title></circle><circle class="pt" cx="860.4" cy="255.5" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 126))
+naive Sharpe 0.55
+DSR 0.001
+DSR effective 0.157
+BH significant: False
+h_fedcdab9807a</title></circle><circle class="pt" cx="860.3" cy="252.2" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 3))
+naive Sharpe 0.55
 DSR 0.000
-DSR analytic 0.077
+DSR effective 0.168
 BH significant: False
-h_57d4b6e2751e</title></circle><circle class="pt" cx="848.6" cy="278.0" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 10))
-naive Sharpe 0.53
-DSR 0.000
-DSR analytic 0.077
-BH significant: False
-h_2ad87793b395</title></circle><circle class="pt" cx="847.6" cy="278.9" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 3))
-naive Sharpe 0.53
-DSR 0.000
-DSR analytic 0.074
-BH significant: False
-h_4189ae299105</title></circle><circle class="pt" cx="845.9" cy="280.1" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 10))
-naive Sharpe 0.51
-DSR 0.000
-DSR analytic 0.070
-BH significant: False
-h_36be72c93495</title></circle><circle class="pt" cx="844.3" cy="281.8" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_std(returns, 63)) - 0.3 * rank(momentum(63, 5))
-naive Sharpe 0.50
-DSR 0.000
-DSR analytic 0.064
-BH significant: False
-h_1ea635323c6b</title></circle><circle class="pt" cx="844.2" cy="283.6" r="5" fill="var(--series-1)"><title>rank(momentum(189, 5))
-naive Sharpe 0.50
-DSR 0.000
-DSR analytic 0.058
-BH significant: False
-h_0296afc9dbb9</title></circle><circle class="pt" cx="842.2" cy="282.5" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 3))
+h_0f23c09dfa2c</title></circle><circle class="pt" cx="849.5" cy="262.9" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 10))
 naive Sharpe 0.49
 DSR 0.000
-DSR analytic 0.062
+DSR effective 0.131
 BH significant: False
-h_749dcf921345</title></circle><circle class="pt" cx="840.9" cy="283.3" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 1))
-naive Sharpe 0.48
-DSR 0.000
-DSR analytic 0.059
-BH significant: False
-h_b952176602b1</title></circle><circle class="pt" cx="840.5" cy="285.6" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(126, 1)) + 0.5 * rank(momentum(189, 1))
-naive Sharpe 0.48
-DSR 0.000
-DSR analytic 0.051
-BH significant: False
-h_c7f6d4b0b99c</title></circle><circle class="pt" cx="840.2" cy="285.8" r="5" fill="var(--series-1)"><title>rank(momentum(189, 1))
+h_0ccd3bc0058f</title></circle><circle class="pt" cx="847.4" cy="264.6" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 5))
 naive Sharpe 0.47
 DSR 0.000
-DSR analytic 0.050
+DSR effective 0.125
 BH significant: False
-h_611d35bca2d9</title></circle><circle class="pt" cx="830.6" cy="289.0" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 63))
-naive Sharpe 0.40
+h_e1a952c36b48</title></circle><circle class="pt" cx="845.6" cy="269.8" r="5" fill="var(--series-1)"><title>rank(momentum(189, 1))
+naive Sharpe 0.46
 DSR 0.000
-DSR analytic 0.039
+DSR effective 0.106
 BH significant: False
-h_46205f279f84</title></circle><circle class="pt" cx="828.3" cy="289.6" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 5))
+h_91628452fd2b</title></circle><circle class="pt" cx="844.9" cy="267.5" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_sum(returns, 5)) - 0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+naive Sharpe 0.46
+DSR 0.000
+DSR effective 0.114
+BH significant: False
+h_45fc01ef0f26</title></circle><circle class="pt" cx="842.6" cy="273.0" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(189, 21)) + 0.5 * rank(ts_zscore(price, 252))
+naive Sharpe 0.45
+DSR 0.001
+DSR effective 0.095
+BH significant: False
+h_336092717c3d</title></circle><circle class="pt" cx="840.6" cy="273.1" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(189, 21)) - 0.5 * rank(-ts_sum(returns, 1))
+naive Sharpe 0.43
+DSR 0.000
+DSR effective 0.095
+BH significant: False
+h_f18479ef2c85</title></circle><circle class="pt" cx="838.7" cy="274.4" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(126, 1)) + 0.5 * rank(momentum(189, 1))
+naive Sharpe 0.42
+DSR 0.000
+DSR effective 0.090
+BH significant: False
+h_215c8d490356</title></circle><circle class="pt" cx="836.7" cy="275.7" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_sum(returns, 10)) + 0.7 * rank(momentum(189, 21))
+naive Sharpe 0.41
+DSR 0.000
+DSR effective 0.086
+BH significant: False
+h_fe2209ccb77b</title></circle><circle class="pt" cx="832.7" cy="276.4" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 10)) - 0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
 naive Sharpe 0.39
 DSR 0.000
-DSR analytic 0.037
+DSR effective 0.083
 BH significant: False
-h_d8235d8b07fe</title></circle><circle class="pt" cx="826.0" cy="290.5" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 21))
-naive Sharpe 0.37
+h_bb457b7e25a8</title></circle><circle class="pt" cx="832.6" cy="276.6" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_std(returns, 63)) - 0.3 * rank(momentum(63, 5))
+naive Sharpe 0.39
 DSR 0.000
-DSR analytic 0.033
+DSR effective 0.082
 BH significant: False
-h_2423722a1b79</title></circle><circle class="pt" cx="824.7" cy="292.3" r="5" fill="var(--series-1)"><title>rank(momentum(252, 21))
-naive Sharpe 0.36
+h_bcb9d703f3a6</title></circle><circle class="pt" cx="831.3" cy="278.9" r="5" fill="var(--series-1)"><title>rank(momentum(189, 5))
+naive Sharpe 0.38
 DSR 0.000
-DSR analytic 0.027
+DSR effective 0.074
 BH significant: False
-h_82ee12acc5a3</title></circle><circle class="pt" cx="823.4" cy="291.7" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) + 0.5 * rank(-ts_std(returns, 63))
+h_87b031ed6ef8</title></circle><circle class="pt" cx="826.5" cy="281.5" r="5" fill="var(--series-1)"><title>rank(momentum(189, 5))
 naive Sharpe 0.35
 DSR 0.000
-DSR analytic 0.029
+DSR effective 0.065
 BH significant: False
-h_1c0b1dbddc01</title></circle><circle class="pt" cx="820.4" cy="293.2" r="5" fill="var(--series-1)"><title>rank(momentum(189, 5))
+h_11657f6f2a6e</title></circle><circle class="pt" cx="826.4" cy="279.7" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 3))
+naive Sharpe 0.35
+DSR 0.000
+DSR effective 0.071
+BH significant: False
+h_db309bef61cb</title></circle><circle class="pt" cx="825.1" cy="281.0" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) + 0.5 * rank(-ts_std(returns, 63))
+naive Sharpe 0.34
+DSR 0.000
+DSR effective 0.067
+BH significant: False
+h_6a0e7df7e060</title></circle><circle class="pt" cx="822.8" cy="281.7" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 21))
 naive Sharpe 0.33
 DSR 0.000
-DSR analytic 0.024
+DSR effective 0.064
 BH significant: False
-h_9d4e63eb5cd5</title></circle><circle class="pt" cx="820.2" cy="292.7" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_sum(returns, 5)) - 0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
-naive Sharpe 0.33
-DSR 0.000
-DSR analytic 0.026
-BH significant: False
-h_895b540c9cf7</title></circle><circle class="pt" cx="819.1" cy="293.8" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(252, 21)) + 0.5 * rank(-ts_std(returns, 63))
+h_841c8e27892a</title></circle><circle class="pt" cx="820.5" cy="283.3" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 63))
 naive Sharpe 0.32
 DSR 0.000
-DSR analytic 0.022
+DSR effective 0.059
 BH significant: False
-h_e551e62d3590</title></circle><circle class="pt" cx="815.3" cy="293.9" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 3))
+h_753ef93d5195</title></circle><circle class="pt" cx="818.0" cy="284.1" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 10))
 naive Sharpe 0.30
 DSR 0.000
-DSR analytic 0.021
+DSR effective 0.056
 BH significant: False
-h_117aa9bc017d</title></circle><circle class="pt" cx="814.9" cy="294.6" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_sum(returns, 10)) + 0.7 * rank(momentum(189, 21))
+h_62ac2d84aec0</title></circle><circle class="pt" cx="816.3" cy="286.5" r="5" fill="var(--series-1)"><title>rank(momentum(252, 21))
 naive Sharpe 0.29
 DSR 0.000
-DSR analytic 0.019
+DSR effective 0.047
 BH significant: False
-h_0afca82e3198</title></circle><circle class="pt" cx="809.8" cy="295.5" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(126, 5)) - 0.5 * rank(momentum(63, 1))
-naive Sharpe 0.26
+h_7018f7aa1917</title></circle><circle class="pt" cx="814.0" cy="286.7" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(126, 5)) - 0.5 * rank(momentum(63, 1))
+naive Sharpe 0.28
 DSR 0.000
-DSR analytic 0.016
+DSR effective 0.047
 BH significant: False
-h_f2bbcb4568ad</title></circle><circle class="pt" cx="808.2" cy="296.1" r="5" fill="var(--series-1)"><title>0.3 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) - 0.7 * rank(ts_zscore(price, 252))
-naive Sharpe 0.24
+h_6901dc5e709b</title></circle><circle class="pt" cx="804.4" cy="290.6" r="5" fill="var(--series-1)"><title>0.3 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) - 0.7 * rank(ts_zscore(price, 252))
+naive Sharpe 0.22
 DSR 0.000
-DSR analytic 0.014
+DSR effective 0.033
 BH significant: False
-h_3f2a11e8dd67</title></circle><circle class="pt" cx="802.0" cy="296.7" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 63))
-naive Sharpe 0.20
+h_ad8d89dc2f81</title></circle><circle class="pt" cx="802.0" cy="291.3" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(252, 21)) + 0.5 * rank(-ts_std(returns, 63))
+naive Sharpe 0.21
 DSR 0.000
-DSR analytic 0.012
+DSR effective 0.031
 BH significant: False
-h_e96577e0bb59</title></circle><circle class="pt" cx="799.5" cy="297.2" r="5" fill="var(--series-1)"><title>rank(momentum(189, 5))
-naive Sharpe 0.18
+h_3e70206793e7</title></circle><circle class="pt" cx="799.0" cy="291.8" r="5" fill="var(--series-1)"><title>rank(momentum(189, 5))
+naive Sharpe 0.19
 DSR 0.000
-DSR analytic 0.010
+DSR effective 0.029
 BH significant: False
-h_a26d6bdc5c3a</title></circle><circle class="pt" cx="796.9" cy="297.5" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(189, 21)) - 0.5 * rank(-ts_sum(returns, 1))
+h_9741c11c8c2d</title></circle><circle class="pt" cx="798.8" cy="291.5" r="5" fill="var(--series-1)"><title>0.3 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) + 0.7 * rank(-ts_std(returns, 21))
+naive Sharpe 0.19
+DSR 0.000
+DSR effective 0.030
+BH significant: False
+h_b704e8b616d3</title></circle><circle class="pt" cx="794.5" cy="292.7" r="5" fill="var(--series-1)"><title>0.3 * rank(momentum(42, 5)) - 0.7 * rank(momentum(63, 1))
 naive Sharpe 0.16
 DSR 0.000
-DSR analytic 0.009
+DSR effective 0.026
 BH significant: False
-h_9ddb9b0988e6</title></circle><circle class="pt" cx="792.8" cy="297.9" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_std(returns, 126)) - 0.3 * rank(-ts_sum(returns, 21))
-naive Sharpe 0.13
+h_81b7c62c89ee</title></circle><circle class="pt" cx="792.6" cy="293.1" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 10)) - 0.5 * rank(ts_zscore(price, 63))
+naive Sharpe 0.15
 DSR 0.000
-DSR analytic 0.007
+DSR effective 0.024
 BH significant: False
-h_4bfca779f48e</title></circle><circle class="pt" cx="792.6" cy="297.9" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) - 0.5 * rank(momentum(126, 5))
-naive Sharpe 0.13
+h_2ce713744f56</title></circle><circle class="pt" cx="791.7" cy="293.5" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 126)) - 0.5 * rank(momentum(63, 1))
+naive Sharpe 0.14
 DSR 0.000
-DSR analytic 0.007
+DSR effective 0.023
 BH significant: False
-h_6f535fc371f1</title></circle><circle class="pt" cx="791.2" cy="298.1" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 126))
-naive Sharpe 0.12
+h_bce5ed61e24b</title></circle><circle class="pt" cx="791.3" cy="293.6" r="5" fill="var(--series-1)"><title>rank(momentum(189, 1))
+naive Sharpe 0.14
 DSR 0.000
-DSR analytic 0.007
+DSR effective 0.022
 BH significant: False
-h_c3c559477df4</title></circle><circle class="pt" cx="790.9" cy="298.1" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 126)) - 0.5 * rank(momentum(63, 1))
-naive Sharpe 0.12
-DSR 0.000
-DSR analytic 0.007
-BH significant: False
-h_640d9fd902aa</title></circle><circle class="pt" cx="789.1" cy="298.3" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 63)) - 0.7 * rank(-ts_std(returns, 126))
-naive Sharpe 0.11
-DSR 0.000
-DSR analytic 0.006
-BH significant: False
-h_7a2e28d0f079</title></circle><circle class="pt" cx="788.2" cy="298.3" r="5" fill="var(--series-1)"><title>0.3 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) + 0.7 * rank(-ts_std(returns, 21))
+h_83ed23ed220f</title></circle><circle class="pt" cx="783.7" cy="295.0" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 63))
 naive Sharpe 0.10
 DSR 0.000
-DSR analytic 0.006
+DSR effective 0.018
 BH significant: False
-h_e0d9f5672f31</title></circle><circle class="pt" cx="783.0" cy="298.7" r="5" fill="var(--series-1)"><title>0.5 * rank(ts_zscore(price, 21)) + 0.5 * rank(-ts_std(returns, 126))
+h_179ad2215fbf</title></circle><circle class="pt" cx="778.2" cy="295.9" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 126)) + 0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
 naive Sharpe 0.06
 DSR 0.000
-DSR analytic 0.005
+DSR effective 0.014
 BH significant: False
-h_980c608c13cf</title></circle><circle class="pt" cx="782.0" cy="298.8" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 10)) + 0.5 * rank(momentum(126, 5))
-naive Sharpe 0.06
+h_767735e4677e</title></circle><circle class="pt" cx="776.3" cy="296.2" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_std(returns, 126)) - 0.3 * rank(-ts_sum(returns, 21))
+naive Sharpe 0.05
 DSR 0.000
-DSR analytic 0.004
+DSR effective 0.013
 BH significant: False
-h_f731d24b1250</title></circle><circle class="pt" cx="780.3" cy="298.9" r="5" fill="var(--series-1)"><title>rank(momentum(252, 5))
+h_9fecf46b862d</title></circle><circle class="pt" cx="773.8" cy="296.6" r="5" fill="var(--series-1)"><title>rank(momentum(252, 5))
 naive Sharpe 0.04
 DSR 0.000
-DSR analytic 0.004
+DSR effective 0.012
 BH significant: False
-h_70d08df45406</title></circle><circle class="pt" cx="780.2" cy="298.9" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 126)) + 0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
-naive Sharpe 0.04
+h_df63fba40f52</title></circle><circle class="pt" cx="772.6" cy="296.7" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 63)) - 0.7 * rank(-ts_std(returns, 126))
+naive Sharpe 0.03
 DSR 0.000
-DSR analytic 0.004
+DSR effective 0.012
 BH significant: False
-h_1fee01616c18</title></circle><circle class="pt" cx="775.8" cy="299.1" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 10)) - 0.5 * rank(ts_zscore(price, 63))
+h_08f884a032c9</title></circle><circle class="pt" cx="771.8" cy="296.8" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 126))
+naive Sharpe 0.03
+DSR 0.000
+DSR effective 0.011
+BH significant: False
+h_13a2d08e6b44</title></circle><circle class="pt" cx="771.2" cy="296.9" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_std(returns, 126)) - 0.3 * rank(momentum(42, 21))
+naive Sharpe 0.02
+DSR 0.000
+DSR effective 0.011
+BH significant: False
+h_9491afba2d28</title></circle><circle class="pt" cx="769.3" cy="297.1" r="5" fill="var(--series-1)"><title>0.7 * rank(momentum(42, 21)) - 0.3 * rank(ts_zscore(price, 126))
 naive Sharpe 0.01
 DSR 0.000
-DSR analytic 0.003
+DSR effective 0.010
 BH significant: False
-h_d8f4e577c135</title></circle><circle class="pt" cx="773.8" cy="299.2" r="5" fill="var(--series-1)"><title>rank(momentum(189, 1))
-naive Sharpe -0.00
+h_6d3b7a824046</title></circle><circle class="pt" cx="763.9" cy="297.6" r="5" fill="var(--series-1)"><title>rank(momentum(126, 21))
+naive Sharpe -0.02
 DSR 0.000
-DSR analytic 0.003
+DSR effective 0.008
 BH significant: False
-h_0844106e06a7</title></circle><circle class="pt" cx="770.1" cy="299.4" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_std(returns, 126)) - 0.3 * rank(momentum(42, 21))
-naive Sharpe -0.03
-DSR 0.000
-DSR analytic 0.002
-BH significant: False
-h_f385d1d38ca5</title></circle><circle class="pt" cx="769.8" cy="299.4" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 21))
-naive Sharpe -0.03
-DSR 0.000
-DSR analytic 0.002
-BH significant: False
-h_c4994faf35e3</title></circle><circle class="pt" cx="768.6" cy="299.4" r="5" fill="var(--series-1)"><title>rank(momentum(126, 21))
+h_b80bbf8670a0</title></circle><circle class="pt" cx="761.4" cy="297.9" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
 naive Sharpe -0.04
 DSR 0.000
-DSR analytic 0.002
+DSR effective 0.008
 BH significant: False
-h_230953e76bf4</title></circle><circle class="pt" cx="768.1" cy="299.4" r="5" fill="var(--series-1)"><title>rank(momentum(42, 1))
+h_11a4b4d32b48</title></circle><circle class="pt" cx="760.1" cy="298.0" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 21))
 naive Sharpe -0.04
 DSR 0.000
-DSR analytic 0.002
+DSR effective 0.007
 BH significant: False
-h_764eeb817f71</title></circle><circle class="pt" cx="766.5" cy="299.5" r="5" fill="var(--series-1)"><title>0.7 * rank(momentum(42, 21)) - 0.3 * rank(ts_zscore(price, 126))
+h_6e6aaf82e075</title></circle><circle class="pt" cx="760.0" cy="297.9" r="5" fill="var(--series-1)"><title>rank(momentum(252, 1))
+naive Sharpe -0.04
+DSR 0.000
+DSR effective 0.007
+BH significant: False
+h_0c5b27d16e54</title></circle><circle class="pt" cx="759.3" cy="298.0" r="5" fill="var(--series-1)"><title>rank(momentum(126, 21))
 naive Sharpe -0.05
 DSR 0.000
-DSR analytic 0.002
+DSR effective 0.007
 BH significant: False
-h_cab7ae2cfff9</title></circle><circle class="pt" cx="766.1" cy="299.5" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_std(returns, 21)) - 0.3 * rank(momentum(126, 21))
-naive Sharpe -0.06
+h_f7704e2848e8</title></circle><circle class="pt" cx="759.1" cy="298.0" r="5" fill="var(--series-1)"><title>0.5 * rank(ts_zscore(price, 21)) + 0.5 * rank(-ts_std(returns, 126))
+naive Sharpe -0.05
 DSR 0.000
-DSR analytic 0.002
+DSR effective 0.007
 BH significant: False
-h_1ef5d1bc90a7</title></circle><circle class="pt" cx="762.9" cy="299.6" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) + 0.3 * rank(-ts_std(returns, 63))
+h_dcb4927d9b8a</title></circle><circle class="pt" cx="755.9" cy="298.3" r="5" fill="var(--series-1)"><title>rank(momentum(189, 21))
+naive Sharpe -0.07
+DSR 0.000
+DSR effective 0.006
+BH significant: False
+h_116af19edb57</title></circle><circle class="pt" cx="753.2" cy="298.5" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 63))
 naive Sharpe -0.08
 DSR 0.000
-DSR analytic 0.002
+DSR effective 0.005
 BH significant: False
-h_d2fb9c76ab21</title></circle><circle class="pt" cx="761.3" cy="299.6" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) + 0.5 * rank(momentum(126, 1))
+h_d8c33dcb8a6a</title></circle><circle class="pt" cx="752.8" cy="298.4" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 252)) - 0.7 * rank(momentum(63, 1))
 naive Sharpe -0.09
 DSR 0.000
-DSR analytic 0.001
+DSR effective 0.005
 BH significant: False
-h_6aafc02cda6a</title></circle><circle class="pt" cx="761.3" cy="299.6" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 252))
+h_dfec799b3dbd</title></circle><circle class="pt" cx="751.5" cy="298.6" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) + 0.5 * rank(momentum(126, 1))
 naive Sharpe -0.09
 DSR 0.000
-DSR analytic 0.001
+DSR effective 0.005
 BH significant: False
-h_3177e823c6b4</title></circle><circle class="pt" cx="761.3" cy="299.6" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 252)) - 0.7 * rank(momentum(63, 1))
-naive Sharpe -0.09
-DSR 0.000
-DSR analytic 0.001
-BH significant: False
-h_5e7b90324428</title></circle><circle class="pt" cx="760.3" cy="299.6" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 252))
+h_de67623598ec</title></circle><circle class="pt" cx="750.2" cy="298.6" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 126))
 naive Sharpe -0.10
 DSR 0.000
-DSR analytic 0.001
+DSR effective 0.005
 BH significant: False
-h_9df36281531a</title></circle><circle class="pt" cx="760.0" cy="299.6" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
-naive Sharpe -0.10
-DSR 0.000
-DSR analytic 0.001
-BH significant: False
-h_fa8383b0a81c</title></circle><circle class="pt" cx="758.8" cy="299.7" r="5" fill="var(--series-1)"><title>rank(momentum(42, 5))
-naive Sharpe -0.11
-DSR 0.000
-DSR analytic 0.001
-BH significant: False
-h_3955e4f7b094</title></circle><circle class="pt" cx="758.3" cy="299.7" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 63))
-naive Sharpe -0.11
-DSR 0.000
-DSR analytic 0.001
-BH significant: False
-h_878fde5142f1</title></circle><circle class="pt" cx="757.9" cy="299.7" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 63))
-naive Sharpe -0.12
-DSR 0.000
-DSR analytic 0.001
-BH significant: False
-h_f9b454d3c35b</title></circle><circle class="pt" cx="756.2" cy="299.7" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 252))
+h_88cf6ed65fe1</title></circle><circle class="pt" cx="745.4" cy="298.9" r="5" fill="var(--series-1)"><title>rank(momentum(42, 5))
 naive Sharpe -0.13
 DSR 0.000
-DSR analytic 0.001
+DSR effective 0.004
 BH significant: False
-h_e61628779a42</title></circle><circle class="pt" cx="755.5" cy="299.7" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 126))
+h_ec7bfc195e2e</title></circle><circle class="pt" cx="744.9" cy="298.9" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 10)) + 0.5 * rank(momentum(126, 5))
 naive Sharpe -0.13
 DSR 0.000
-DSR analytic 0.001
+DSR effective 0.004
 BH significant: False
-h_b7eda418b403</title></circle><circle class="pt" cx="754.6" cy="299.7" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 126)) - 0.7 * rank(-ts_std(returns, 126))
+h_b20743ae483f</title></circle><circle class="pt" cx="743.9" cy="299.0" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) - 0.5 * rank(momentum(126, 5))
 naive Sharpe -0.14
 DSR 0.000
-DSR analytic 0.001
+DSR effective 0.004
 BH significant: False
-h_c67123f8f7f9</title></circle><circle class="pt" cx="754.5" cy="299.7" r="5" fill="var(--series-1)"><title>rank(momentum(126, 21))
-naive Sharpe -0.14
-DSR 0.000
-DSR analytic 0.001
-BH significant: False
-h_6f6f40b84dea</title></circle><circle class="pt" cx="754.4" cy="299.7" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 10))
-naive Sharpe -0.14
-DSR 0.000
-DSR analytic 0.001
-BH significant: False
-h_d0cb0ae4b228</title></circle><circle class="pt" cx="753.0" cy="299.8" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 10))
+h_fd6c3da2460c</title></circle><circle class="pt" cx="742.4" cy="299.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 252))
 naive Sharpe -0.15
 DSR 0.000
-DSR analytic 0.001
+DSR effective 0.004
 BH significant: False
-h_33bcdab73240</title></circle><circle class="pt" cx="751.3" cy="299.8" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 126)) - 0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
+h_3c7893604aef</title></circle><circle class="pt" cx="740.6" cy="299.1" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 126))
 naive Sharpe -0.16
 DSR 0.000
-DSR analytic 0.001
+DSR effective 0.003
 BH significant: False
-h_7957f86f4c7a</title></circle><circle class="pt" cx="748.8" cy="299.8" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) + 0.3 * rank(-ts_sum(returns, 1))
+h_21ad00d80b74</title></circle><circle class="pt" cx="740.5" cy="299.1" r="5" fill="var(--series-1)"><title>rank(momentum(42, 1))
+naive Sharpe -0.16
+DSR 0.000
+DSR effective 0.003
+BH significant: False
+h_7b61018ee0d6</title></circle><circle class="pt" cx="736.6" cy="299.2" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 126)) - 0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
 naive Sharpe -0.18
 DSR 0.000
-DSR analytic 0.001
+DSR effective 0.003
 BH significant: False
-h_dfacb0bbfa14</title></circle><circle class="pt" cx="748.6" cy="299.8" r="5" fill="var(--series-1)"><title>rank(momentum(252, 1))
-naive Sharpe -0.18
-DSR 0.000
-DSR analytic 0.001
-BH significant: False
-h_6502028c6e9a</title></circle><circle class="pt" cx="748.2" cy="299.8" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 126))
+h_c2c56ec65fed</title></circle><circle class="pt" cx="735.3" cy="299.2" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 252))
 naive Sharpe -0.19
 DSR 0.000
-DSR analytic 0.001
+DSR effective 0.003
 BH significant: False
-h_63761aeca807</title></circle><circle class="pt" cx="745.7" cy="299.8" r="5" fill="var(--series-1)"><title>0.3 * rank(momentum(42, 1)) + 0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+h_9f95accca466</title></circle><circle class="pt" cx="734.6" cy="299.3" r="5" fill="var(--series-1)"><title>0.7 * rank(ts_zscore(price, 252)) - 0.3 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+naive Sharpe -0.19
+DSR 0.000
+DSR effective 0.003
+BH significant: False
+h_af3ac59a1379</title></circle><circle class="pt" cx="733.2" cy="299.4" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 21))
 naive Sharpe -0.20
 DSR 0.000
-DSR analytic 0.001
+DSR effective 0.002
 BH significant: False
-h_38624e9a40a6</title></circle><circle class="pt" cx="744.2" cy="299.8" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 252))
+h_3605d23ee176</title></circle><circle class="pt" cx="732.6" cy="299.4" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 10))
 naive Sharpe -0.21
 DSR 0.000
-DSR analytic 0.001
+DSR effective 0.002
 BH significant: False
-h_455d2c58da64</title></circle><circle class="pt" cx="742.9" cy="299.9" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 21))
+h_dff9ea8c2f58</title></circle><circle class="pt" cx="732.5" cy="299.4" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) + 0.3 * rank(-ts_sum(returns, 1))
+naive Sharpe -0.21
+DSR 0.000
+DSR effective 0.002
+BH significant: False
+h_f124432c6144</title></circle><circle class="pt" cx="730.2" cy="299.4" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 252))
 naive Sharpe -0.22
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.002
 BH significant: False
-h_3c405e42b884</title></circle><circle class="pt" cx="742.7" cy="299.9" r="5" fill="var(--series-1)"><title>0.7 * rank(momentum(126, 21)) + 0.3 * rank(-ts_sum(returns, 10))
+h_4580178a26f7</title></circle><circle class="pt" cx="730.0" cy="299.4" r="5" fill="var(--series-1)"><title>0.7 * rank(ts_zscore(price, 21)) + 0.3 * rank(momentum(189, 5))
+naive Sharpe -0.22
+DSR 0.000
+DSR effective 0.002
+BH significant: False
+h_a25502bf4e08</title></circle><circle class="pt" cx="729.5" cy="299.4" r="5" fill="var(--series-1)"><title>rank(momentum(126, 21))
+naive Sharpe -0.22
+DSR 0.000
+DSR effective 0.002
+BH significant: False
+h_c444bfbf73a1</title></circle><circle class="pt" cx="728.6" cy="299.5" r="5" fill="var(--series-1)"><title>0.7 * rank(momentum(126, 21)) + 0.3 * rank(-ts_sum(returns, 10))
 naive Sharpe -0.23
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.002
 BH significant: False
-h_1f77f8b2f1f2</title></circle><circle class="pt" cx="741.4" cy="299.9" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 10)) + 0.7 * rank(momentum(63, 5))
+h_e404ea59e71c</title></circle><circle class="pt" cx="727.7" cy="299.5" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 10)) - 0.7 * rank(-ts_std(returns, 10))
 naive Sharpe -0.23
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.002
 BH significant: False
-h_037452f3f353</title></circle><circle class="pt" cx="739.5" cy="299.9" r="5" fill="var(--series-1)"><title>rank(momentum(63, 1))
+h_d011839e66a3</title></circle><circle class="pt" cx="724.8" cy="299.6" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
 naive Sharpe -0.25
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.002
 BH significant: False
-h_9730a2eea4be</title></circle><circle class="pt" cx="739.4" cy="299.9" r="5" fill="var(--series-1)"><title>rank(momentum(126, 21))
+h_d0097ed05aff</title></circle><circle class="pt" cx="724.7" cy="299.5" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 21)) + 0.5 * rank(momentum(252, 21))
 naive Sharpe -0.25
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.002
 BH significant: False
-h_90fee5c8a332</title></circle><circle class="pt" cx="738.9" cy="299.9" r="5" fill="var(--series-1)"><title>0.7 * rank(ts_zscore(price, 21)) + 0.3 * rank(momentum(189, 5))
+h_c60118ee6b89</title></circle><circle class="pt" cx="724.5" cy="299.6" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_sum(returns, 21)) + 0.5 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
 naive Sharpe -0.25
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.001
 BH significant: False
-h_76239338d929</title></circle><circle class="pt" cx="736.8" cy="299.9" r="5" fill="var(--series-1)"><title>0.7 * rank(momentum(126, 5)) - 0.3 * rank(-ts_std(returns, 10))
+h_ca7c8e7d6424</title></circle><circle class="pt" cx="722.3" cy="299.6" r="5" fill="var(--series-1)"><title>0.7 * rank(momentum(126, 5)) - 0.3 * rank(-ts_std(returns, 10))
 naive Sharpe -0.27
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.001
 BH significant: False
-h_48bad50fd890</title></circle><circle class="pt" cx="736.3" cy="299.9" r="5" fill="var(--series-1)"><title>0.3 * rank(momentum(42, 5)) - 0.7 * rank(momentum(63, 1))
-naive Sharpe -0.27
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_ec64a9aa17b0</title></circle><circle class="pt" cx="735.4" cy="299.9" r="5" fill="var(--series-1)"><title>0.7 * rank(ts_zscore(price, 252)) - 0.3 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+h_5b814399a42e</title></circle><circle class="pt" cx="720.6" cy="299.6" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 126)) - 0.7 * rank(-ts_std(returns, 126))
 naive Sharpe -0.28
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.001
 BH significant: False
-h_6b176791daee</title></circle><circle class="pt" cx="734.9" cy="299.9" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+h_15c538580c02</title></circle><circle class="pt" cx="720.3" cy="299.7" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) + 0.3 * rank(-ts_std(returns, 63))
 naive Sharpe -0.28
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.001
 BH significant: False
-h_a245a81ce906</title></circle><circle class="pt" cx="734.8" cy="299.9" r="5" fill="var(--series-1)"><title>0.7 * rank(ts_zscore(price, 126)) + 0.3 * rank(-ts_std(returns, 21))
-naive Sharpe -0.28
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_f063f83dbceb</title></circle><circle class="pt" cx="733.5" cy="299.9" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 21)) + 0.5 * rank(momentum(252, 21))
+h_9c741f22c437</title></circle><circle class="pt" cx="718.9" cy="299.7" r="5" fill="var(--series-1)"><title>rank(momentum(126, 21))
 naive Sharpe -0.29
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.001
 BH significant: False
-h_076a4c6d8d82</title></circle><circle class="pt" cx="733.1" cy="299.9" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 21)) - 0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+h_3f7047e7eb3e</title></circle><circle class="pt" cx="718.0" cy="299.7" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 63))
 naive Sharpe -0.29
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.001
 BH significant: False
-h_6c43b693725f</title></circle><circle class="pt" cx="732.7" cy="299.9" r="5" fill="var(--series-1)"><title>rank(momentum(42, 21))
+h_96738784f03a</title></circle><circle class="pt" cx="716.2" cy="299.7" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_std(returns, 21)) - 0.3 * rank(momentum(126, 21))
 naive Sharpe -0.30
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.001
 BH significant: False
-h_bfd1d1330703</title></circle><circle class="pt" cx="729.7" cy="299.9" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 10)) + 0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
+h_9e87d6d17816</title></circle><circle class="pt" cx="716.0" cy="299.7" r="5" fill="var(--series-1)"><title>0.3 * rank(momentum(42, 1)) + 0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+naive Sharpe -0.30
+DSR 0.000
+DSR effective 0.001
+BH significant: False
+h_5db6a070e049</title></circle><circle class="pt" cx="714.8" cy="299.7" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 21)) + 0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+naive Sharpe -0.31
+DSR 0.000
+DSR effective 0.001
+BH significant: False
+h_33108fd2f87d</title></circle><circle class="pt" cx="714.7" cy="299.7" r="5" fill="var(--series-1)"><title>rank(momentum(63, 1))
+naive Sharpe -0.31
+DSR 0.000
+DSR effective 0.001
+BH significant: False
+h_af4e1fb99d24</title></circle><circle class="pt" cx="713.4" cy="299.7" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(252, 1)) + 0.5 * rank(ts_zscore(price, 63))
 naive Sharpe -0.32
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.001
 BH significant: False
-h_1bd26309808a</title></circle><circle class="pt" cx="726.7" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+h_ca1161aaa13a</title></circle><circle class="pt" cx="711.9" cy="299.8" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) - 0.3 * rank(ts_zscore(price, 21))
+naive Sharpe -0.33
+DSR 0.000
+DSR effective 0.001
+BH significant: False
+h_7c0ae5d1071c</title></circle><circle class="pt" cx="710.5" cy="299.8" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
 naive Sharpe -0.34
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.001
 BH significant: False
-h_afd361815f93</title></circle><circle class="pt" cx="726.4" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) + 0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+h_f07cf91b9172</title></circle><circle class="pt" cx="710.1" cy="299.8" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_sum(returns, 10)) - 0.7 * rank(-ts_std(returns, 63))
 naive Sharpe -0.34
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.001
 BH significant: False
-h_20aa36262513</title></circle><circle class="pt" cx="723.8" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_std(returns, 126)) - 0.3 * rank(ts_zscore(price, 126))
-naive Sharpe -0.36
+h_64ce8fa5211d</title></circle><circle class="pt" cx="709.1" cy="299.8" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 10)) + 0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
+naive Sharpe -0.34
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.001
 BH significant: False
-h_78742703ee89</title></circle><circle class="pt" cx="722.5" cy="300.0" r="5" fill="var(--series-1)"><title>rank(momentum(126, 21))
+h_35d6f5b10c3e</title></circle><circle class="pt" cx="705.3" cy="299.8" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 21)) - 0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
 naive Sharpe -0.37
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.001
 BH significant: False
-h_14437a89eb86</title></circle><circle class="pt" cx="722.4" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 21))
+h_12f7fce48e25</title></circle><circle class="pt" cx="704.8" cy="299.8" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 126))
 naive Sharpe -0.37
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.001
 BH significant: False
-h_bfd1be8c9997</title></circle><circle class="pt" cx="721.2" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 21)) + 0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+h_07596e4f1344</title></circle><circle class="pt" cx="704.0" cy="299.9" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 21))
+naive Sharpe -0.37
+DSR 0.000
+DSR effective 0.001
+BH significant: False
+h_aa92c6d9f57b</title></circle><circle class="pt" cx="703.5" cy="299.9" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_sum(returns, 3)) + 0.7 * rank(-ts_sum(returns, 21))
 naive Sharpe -0.38
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_b85920d5e6a5</title></circle><circle class="pt" cx="721.1" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
-naive Sharpe -0.38
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_4a801c74c9df</title></circle><circle class="pt" cx="721.1" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) - 0.3 * rank(ts_zscore(price, 21))
-naive Sharpe -0.38
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_7c7b205dbf1b</title></circle><circle class="pt" cx="720.4" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 10)) - 0.7 * rank(-ts_std(returns, 10))
-naive Sharpe -0.38
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_79b5afb5eeaf</title></circle><circle class="pt" cx="720.3" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 21))
+h_c888d2a36368</title></circle><circle class="pt" cx="702.1" cy="299.8" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 252))
 naive Sharpe -0.39
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.001
 BH significant: False
-h_acd0027be767</title></circle><circle class="pt" cx="719.9" cy="300.0" r="5" fill="var(--series-1)"><title>rank(momentum(189, 21))
+h_c93ff97bd9af</title></circle><circle class="pt" cx="702.0" cy="299.9" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
 naive Sharpe -0.39
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_dec71af56162</title></circle><circle class="pt" cx="719.5" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 21))
+h_0bb35a860697</title></circle><circle class="pt" cx="701.9" cy="299.8" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 252)) + 0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
 naive Sharpe -0.39
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.001
 BH significant: False
-h_2e923416d6c2</title></circle><circle class="pt" cx="719.0" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) - 0.7 * rank(ts_zscore(price, 252))
-naive Sharpe -0.40
+h_b320339e518b</title></circle><circle class="pt" cx="701.6" cy="299.8" r="5" fill="var(--series-1)"><title>0.3 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) - 0.7 * rank(ts_zscore(price, 252))
+naive Sharpe -0.39
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.001
 BH significant: False
-h_d2a8c93d56fb</title></circle><circle class="pt" cx="719.0" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 252)) + 0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
-naive Sharpe -0.40
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_4f0a9d467e7d</title></circle><circle class="pt" cx="717.9" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(ts_zscore(price, 21)) + 0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
-naive Sharpe -0.40
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_26bff0b77475</title></circle><circle class="pt" cx="716.4" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+h_00e866b86615</title></circle><circle class="pt" cx="698.7" cy="299.9" r="5" fill="var(--series-1)"><title>0.7 * rank(ts_zscore(price, 126)) + 0.3 * rank(-ts_std(returns, 21))
 naive Sharpe -0.41
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_93ec0aa97694</title></circle><circle class="pt" cx="715.9" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(252, 1)) + 0.5 * rank(ts_zscore(price, 63))
+h_84d36a3cbe66</title></circle><circle class="pt" cx="698.5" cy="299.9" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+naive Sharpe -0.41
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_60655ed58443</title></circle><circle class="pt" cx="698.0" cy="299.9" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 10))
+naive Sharpe -0.41
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_a72801d51356</title></circle><circle class="pt" cx="696.2" cy="299.9" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 21))
 naive Sharpe -0.42
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_30af400cb508</title></circle><circle class="pt" cx="715.1" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(ts_zscore(price, 126)) - 0.5 * rank(-ts_sum(returns, 21))
+h_008848b947ee</title></circle><circle class="pt" cx="695.6" cy="299.9" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_sum(returns, 10)) - 0.5 * rank(-ts_std(returns, 63))
 naive Sharpe -0.42
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_b4b812df8d71</title></circle><circle class="pt" cx="714.6" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_sum(returns, 21)) + 0.5 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
+h_7e0f24c12783</title></circle><circle class="pt" cx="695.5" cy="299.9" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) + 0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
 naive Sharpe -0.43
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_550eb37f3bcd</title></circle><circle class="pt" cx="714.6" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(63, 1)) + 0.5 * rank(ts_zscore(price, 63))
+h_4798b89931a2</title></circle><circle class="pt" cx="694.6" cy="299.9" r="5" fill="var(--series-1)"><title>0.5 * rank(ts_zscore(price, 21)) + 0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
 naive Sharpe -0.43
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_b8f9b9671171</title></circle><circle class="pt" cx="713.5" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 21))
-naive Sharpe -0.43
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_543f0af4b69a</title></circle><circle class="pt" cx="712.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 63)) - 0.5 * rank(ts_zscore(price, 252))
+h_0ca0e6be25e6</title></circle><circle class="pt" cx="693.0" cy="299.9" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 21))
 naive Sharpe -0.44
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_792d17f10862</title></circle><circle class="pt" cx="710.0" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 126)) + 0.7 * rank(-ts_std(returns, 63))
+h_e0b539b6c268</title></circle><circle class="pt" cx="692.9" cy="299.9" r="5" fill="var(--series-1)"><title>0.7 * rank(momentum(63, 5)) + 0.3 * rank(ts_zscore(price, 21))
+naive Sharpe -0.44
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_dd3f1c6e3be8</title></circle><circle class="pt" cx="690.1" cy="299.9" r="5" fill="var(--series-1)"><title>rank(momentum(42, 21))
 naive Sharpe -0.46
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_82e35b344625</title></circle><circle class="pt" cx="709.9" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 126)) + 0.7 * rank(-ts_std(returns, 126))
+h_45d5d51e25e1</title></circle><circle class="pt" cx="689.4" cy="299.9" r="5" fill="var(--series-1)"><title>0.5 * rank(ts_zscore(price, 126)) - 0.5 * rank(-ts_sum(returns, 21))
 naive Sharpe -0.46
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_6c5a9678a021</title></circle><circle class="pt" cx="709.9" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 126))
+h_e5472985f3fd</title></circle><circle class="pt" cx="689.4" cy="299.9" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) - 0.3 * rank(-ts_std(returns, 63))
 naive Sharpe -0.46
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_2990e98c71a3</title></circle><circle class="pt" cx="708.4" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 10)) + 0.5 * rank(ts_zscore(price, 252))
-naive Sharpe -0.47
+h_ed6e6c7a4ff3</title></circle><circle class="pt" cx="689.3" cy="299.9" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 10)) + 0.7 * rank(momentum(63, 5))
+naive Sharpe -0.46
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_9d38d573e50a</title></circle><circle class="pt" cx="704.0" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 10))
+h_9f1cb4b6ba9f</title></circle><circle class="pt" cx="688.9" cy="299.9" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 10)) + 0.5 * rank(ts_zscore(price, 252))
+naive Sharpe -0.46
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_da149045ea06</title></circle><circle class="pt" cx="686.6" cy="299.9" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 1))
+naive Sharpe -0.48
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_02234ad480e6</title></circle><circle class="pt" cx="685.7" cy="299.9" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_std(returns, 126)) + 0.3 * rank(momentum(189, 1))
+naive Sharpe -0.48
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_72d905c74553</title></circle><circle class="pt" cx="685.6" cy="299.9" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_std(returns, 126)) - 0.3 * rank(ts_zscore(price, 126))
+naive Sharpe -0.48
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_cee88700e737</title></circle><circle class="pt" cx="682.3" cy="300.0" r="5" fill="var(--series-1)"><title>rank(momentum(42, 1))
 naive Sharpe -0.50
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_4ed55664d50d</title></circle><circle class="pt" cx="703.3" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 1))
+h_602a3cdefbc4</title></circle><circle class="pt" cx="681.9" cy="299.9" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 126))
 naive Sharpe -0.51
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_2c4161077ad8</title></circle><circle class="pt" cx="701.3" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 126))
+h_ecac988c99d0</title></circle><circle class="pt" cx="680.2" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_std(returns, 63)) + 0.3 * rank(ts_zscore(price, 21))
 naive Sharpe -0.52
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_8af4b1f5127d</title></circle><circle class="pt" cx="701.1" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) - 0.3 * rank(-ts_std(returns, 63))
+h_c0bd53ec4a2f</title></circle><circle class="pt" cx="680.0" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 63))
 naive Sharpe -0.52
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_b69c3bdaa2d4</title></circle><circle class="pt" cx="699.2" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 21))
+h_45bbaae60b59</title></circle><circle class="pt" cx="678.5" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
+naive Sharpe -0.53
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_98ce5aa411c6</title></circle><circle class="pt" cx="677.9" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
+naive Sharpe -0.53
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_af9f774a22d9</title></circle><circle class="pt" cx="676.5" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 63)) - 0.5 * rank(ts_zscore(price, 252))
 naive Sharpe -0.54
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_c06f83fa41f9</title></circle><circle class="pt" cx="699.0" cy="300.0" r="5" fill="var(--series-1)"><title>rank(momentum(42, 1))
+h_75442604bff4</title></circle><circle class="pt" cx="676.3" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 10))
 naive Sharpe -0.54
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_ba8c7d9a845c</title></circle><circle class="pt" cx="698.0" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
-naive Sharpe -0.55
+h_75483e26a012</title></circle><circle class="pt" cx="675.6" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 21))
+naive Sharpe -0.54
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_02b1ec760f1e</title></circle><circle class="pt" cx="697.8" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_sum(returns, 10)) - 0.5 * rank(-ts_std(returns, 63))
-naive Sharpe -0.55
+h_172cd5f5e478</title></circle><circle class="pt" cx="675.4" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_sum(returns, 10)) - 0.5 * rank(-ts_std(returns, 63))
+naive Sharpe -0.54
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_54ddfdb9e3e3</title></circle><circle class="pt" cx="697.5" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_sum(returns, 10)) - 0.7 * rank(-ts_std(returns, 63))
-naive Sharpe -0.55
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_24c85fb874ed</title></circle><circle class="pt" cx="696.3" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(ts_zscore(price, 126)) + 0.3 * rank(ts_zscore(price, 21))
+h_c936e31467fb</title></circle><circle class="pt" cx="672.4" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 21))
 naive Sharpe -0.56
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_cdb4e8de1500</title></circle><circle class="pt" cx="695.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_sum(returns, 3)) + 0.7 * rank(-ts_sum(returns, 21))
-naive Sharpe -0.56
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_48bd8d0dcd3a</title></circle><circle class="pt" cx="695.5" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(momentum(63, 5)) - 0.3 * rank(-ts_sum(returns, 5))
-naive Sharpe -0.56
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_b2fe79ead670</title></circle><circle class="pt" cx="695.3" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_sum(returns, 10)) - 0.5 * rank(-ts_std(returns, 63))
-naive Sharpe -0.56
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_a9dbb0e16476</title></circle><circle class="pt" cx="694.3" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
+h_44324f7e46fe</title></circle><circle class="pt" cx="670.9" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) - 0.5 * rank(-ts_std(returns, 10))
 naive Sharpe -0.57
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_699547f5a869</title></circle><circle class="pt" cx="693.4" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 126))
+h_89390d879b50</title></circle><circle class="pt" cx="669.7" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
 naive Sharpe -0.58
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_64ae1db8b7c9</title></circle><circle class="pt" cx="693.1" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) - 0.3 * rank(momentum(189, 21))
+h_87aa0caae65f</title></circle><circle class="pt" cx="669.3" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 10))
 naive Sharpe -0.58
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_50db09ac4358</title></circle><circle class="pt" cx="690.5" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 21))
-naive Sharpe -0.60
+h_b8bff936bf04</title></circle><circle class="pt" cx="669.0" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 126))
+naive Sharpe -0.58
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_1df9ea0f93f4</title></circle><circle class="pt" cx="688.8" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 21))
+h_50941f3c3aa4</title></circle><circle class="pt" cx="668.0" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 126))
+naive Sharpe -0.59
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_d58831e1f31c</title></circle><circle class="pt" cx="668.0" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 126)) + 0.7 * rank(-ts_std(returns, 63))
+naive Sharpe -0.59
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_d07086a42125</title></circle><circle class="pt" cx="667.8" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(ts_zscore(price, 126)) + 0.3 * rank(ts_zscore(price, 21))
+naive Sharpe -0.59
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_10fb48bae1cd</title></circle><circle class="pt" cx="667.5" cy="300.0" r="5" fill="var(--series-1)"><title>rank(momentum(63, 1))
+naive Sharpe -0.59
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_9c09974cbdb3</title></circle><circle class="pt" cx="667.3" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(momentum(252, 21)) - 0.7 * rank(momentum(126, 21))
+naive Sharpe -0.59
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_d4b84fd6c240</title></circle><circle class="pt" cx="664.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(momentum(63, 5)) - 0.3 * rank(-ts_sum(returns, 5))
 naive Sharpe -0.61
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_3ff6b6e1f3fe</title></circle><circle class="pt" cx="688.5" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) - 0.3 * rank(ts_zscore(price, 63))
+h_4e8f40d787d5</title></circle><circle class="pt" cx="663.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_sum(returns, 5)) + 0.7 * rank(-ts_sum(returns, 10))
 naive Sharpe -0.61
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_6705f73565e0</title></circle><circle class="pt" cx="688.4" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 63))
-naive Sharpe -0.61
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_73330795075b</title></circle><circle class="pt" cx="688.1" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
+h_3c0765638e16</title></circle><circle class="pt" cx="662.3" cy="300.0" r="5" fill="var(--series-1)"><title>rank(momentum(42, 1))
 naive Sharpe -0.62
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_c6375f5ac73b</title></circle><circle class="pt" cx="686.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) + 0.7 * rank(momentum(63, 1))
+h_20166e418c30</title></circle><circle class="pt" cx="660.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) - 0.3 * rank(momentum(189, 21))
 naive Sharpe -0.63
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_78ef08f586f8</title></circle><circle class="pt" cx="684.6" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(momentum(252, 21)) - 0.7 * rank(momentum(126, 21))
+h_dbdee6ab018a</title></circle><circle class="pt" cx="659.6" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 252)) - 0.7 * rank(momentum(126, 5))
 naive Sharpe -0.64
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_a6143d6404cb</title></circle><circle class="pt" cx="683.9" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) + 0.3 * rank(-ts_std(returns, 21))
+h_04d4b33746ed</title></circle><circle class="pt" cx="659.3" cy="300.0" r="5" fill="var(--series-1)"><title>rank(momentum(63, 5))
+naive Sharpe -0.64
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_231eeab1e6f4</title></circle><circle class="pt" cx="658.3" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 21))
 naive Sharpe -0.65
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_57e7675c24e9</title></circle><circle class="pt" cx="682.0" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 252)) - 0.7 * rank(momentum(126, 5))
-naive Sharpe -0.66
+h_30da7d6f498f</title></circle><circle class="pt" cx="657.4" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(63, 1)) + 0.5 * rank(ts_zscore(price, 63))
+naive Sharpe -0.65
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_fc0d0a8f0b0b</title></circle><circle class="pt" cx="681.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_std(returns, 126)) + 0.3 * rank(momentum(189, 1))
-naive Sharpe -0.66
+h_ea8f0185d69c</title></circle><circle class="pt" cx="657.0" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) + 0.3 * rank(-ts_std(returns, 21))
+naive Sharpe -0.65
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_64323bbeabb5</title></circle><circle class="pt" cx="681.3" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 126)) + 0.7 * rank(-ts_sum(returns, 3))
-naive Sharpe -0.67
+h_369472d3280e</title></circle><circle class="pt" cx="650.9" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 21))
+naive Sharpe -0.69
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_8a99b9c1c3fc</title></circle><circle class="pt" cx="679.8" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_std(returns, 63)) + 0.3 * rank(ts_zscore(price, 21))
-naive Sharpe -0.68
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_86a761791559</title></circle><circle class="pt" cx="679.5" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_sum(returns, 21)) + 0.5 * rank(-ts_std(returns, 126))
-naive Sharpe -0.68
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_4493bdf092c7</title></circle><circle class="pt" cx="676.0" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 126))
+h_9308a7c82842</title></circle><circle class="pt" cx="649.4" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_std(returns, 21)) + 0.3 * rank(-ts_std(returns, 126))
 naive Sharpe -0.70
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_17c12260bf47</title></circle><circle class="pt" cx="675.0" cy="300.0" r="5" fill="var(--series-1)"><title>rank(momentum(63, 1))
-naive Sharpe -0.71
+h_65bd4620983e</title></circle><circle class="pt" cx="649.2" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) + 0.7 * rank(momentum(63, 1))
+naive Sharpe -0.70
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_d045bfff0910</title></circle><circle class="pt" cx="674.9" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 21))
-naive Sharpe -0.71
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_7af1c5707e5e</title></circle><circle class="pt" cx="673.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) - 0.5 * rank(-ts_sum(returns, 3))
-naive Sharpe -0.72
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_d16c8a14c6d9</title></circle><circle class="pt" cx="673.4" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) + 0.3 * rank(ts_zscore(price, 126))
-naive Sharpe -0.72
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_40f58778ec66</title></circle><circle class="pt" cx="672.3" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
+h_8d48315709ce</title></circle><circle class="pt" cx="644.0" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_sum(returns, 21)) + 0.3 * rank(ts_zscore(price, 126))
 naive Sharpe -0.73
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_266ceaa4d06e</title></circle><circle class="pt" cx="671.6" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 126))
-naive Sharpe -0.73
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_cbd216ec5049</title></circle><circle class="pt" cx="670.4" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(63, 21)) + 0.5 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
+h_5ff1f5a4ad18</title></circle><circle class="pt" cx="641.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 252)) + 0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
 naive Sharpe -0.74
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_1730fd5cc950</title></circle><circle class="pt" cx="670.2" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
+h_9bf03698278a</title></circle><circle class="pt" cx="641.6" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 21))
 naive Sharpe -0.74
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_7307ee511a1d</title></circle><circle class="pt" cx="666.2" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) - 0.7 * rank(-ts_std(returns, 21))
-naive Sharpe -0.77
+h_a0b5c04cf77f</title></circle><circle class="pt" cx="641.4" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) - 0.5 * rank(-ts_sum(returns, 3))
+naive Sharpe -0.75
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_7d75e969a59f</title></circle><circle class="pt" cx="662.5" cy="300.0" r="5" fill="var(--series-1)"><title>rank(momentum(63, 5))
+h_a2cce9ff9fa1</title></circle><circle class="pt" cx="638.6" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 21))
+naive Sharpe -0.76
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_2fc99e904034</title></circle><circle class="pt" cx="635.8" cy="300.0" r="5" fill="var(--series-1)"><title>rank(momentum(63, 21))
+naive Sharpe -0.78
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_5cb0b3f1c5f5</title></circle><circle class="pt" cx="634.7" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
+naive Sharpe -0.79
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_5da0dd2d7dc4</title></circle><circle class="pt" cx="632.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(momentum(63, 21)) + 0.5 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
 naive Sharpe -0.80
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_47fc625301f0</title></circle><circle class="pt" cx="661.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 252)) + 0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+h_50c43eabdb19</title></circle><circle class="pt" cx="631.5" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(momentum(189, 21)) - 0.7 * rank(ts_zscore(price, 21))
+naive Sharpe -0.80
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_66fbeffa03c5</title></circle><circle class="pt" cx="629.9" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) - 0.3 * rank(ts_zscore(price, 63))
 naive Sharpe -0.81
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_bb286bf535f8</title></circle><circle class="pt" cx="660.6" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_sum(returns, 5)) + 0.7 * rank(-ts_sum(returns, 10))
-naive Sharpe -0.81
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_901c4cca6a59</title></circle><circle class="pt" cx="659.3" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 21))
+h_6fb9f5944a1b</title></circle><circle class="pt" cx="629.7" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
 naive Sharpe -0.82
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_3e84d8716601</title></circle><circle class="pt" cx="659.3" cy="300.0" r="5" fill="var(--series-1)"><title>rank(momentum(42, 1))
-naive Sharpe -0.82
+h_9bf57da71bf5</title></circle><circle class="pt" cx="627.9" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) - 0.7 * rank(momentum(252, 1))
+naive Sharpe -0.83
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_a1e4f25db568</title></circle><circle class="pt" cx="653.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_std(returns, 21)) + 0.3 * rank(-ts_std(returns, 126))
+h_44db8075ef32</title></circle><circle class="pt" cx="625.1" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 63)) - 0.5 * rank(ts_zscore(price, 21))
+naive Sharpe -0.84
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_c658ce7a91f6</title></circle><circle class="pt" cx="622.6" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 10))
 naive Sharpe -0.86
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_7fa999b08ec5</title></circle><circle class="pt" cx="653.5" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+h_e0b282e73c59</title></circle><circle class="pt" cx="621.5" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_sum(returns, 3)) - 0.7 * rank(-ts_std(returns, 63))
 naive Sharpe -0.86
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_3a0e432b5063</title></circle><circle class="pt" cx="653.2" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_sum(returns, 5)) - 0.5 * rank(-ts_sum(returns, 21))
-naive Sharpe -0.87
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_ae3d20449b9a</title></circle><circle class="pt" cx="652.2" cy="300.0" r="5" fill="var(--series-1)"><title>rank(momentum(63, 21))
-naive Sharpe -0.87
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_c4b1719f6567</title></circle><circle class="pt" cx="652.0" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) - 0.5 * rank(-ts_std(returns, 10))
+h_7ad516c042f5</title></circle><circle class="pt" cx="619.3" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 126)) + 0.7 * rank(-ts_sum(returns, 3))
 naive Sharpe -0.88
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_573efa7dc9d5</title></circle><circle class="pt" cx="651.3" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_sum(returns, 21)) + 0.3 * rank(ts_zscore(price, 126))
+h_c79a27b3755c</title></circle><circle class="pt" cx="618.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_sum(returns, 21)) + 0.5 * rank(-ts_std(returns, 126))
 naive Sharpe -0.88
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_bb9c6c6bbb59</title></circle><circle class="pt" cx="648.0" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 126)) + 0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
-naive Sharpe -0.90
+h_520d6fb1ee30</title></circle><circle class="pt" cx="613.1" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) - 0.7 * rank(-ts_std(returns, 21))
+naive Sharpe -0.91
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_d487aa17972d</title></circle><circle class="pt" cx="643.3" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) + 0.3 * rank(ts_zscore(price, 252))
-naive Sharpe -0.94
+h_e0d11cef02f8</title></circle><circle class="pt" cx="610.5" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(momentum(63, 21)) + 0.7 * rank(-ts_sum(returns, 21))
+naive Sharpe -0.93
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_78badfd64f37</title></circle><circle class="pt" cx="640.8" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(momentum(189, 21)) - 0.7 * rank(ts_zscore(price, 21))
+h_af4c914dafc5</title></circle><circle class="pt" cx="607.6" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 63))
+naive Sharpe -0.95
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_101e207edfe9</title></circle><circle class="pt" cx="607.0" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) + 0.3 * rank(ts_zscore(price, 126))
+naive Sharpe -0.95
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_f9cdffb939b3</title></circle><circle class="pt" cx="607.0" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) + 0.5 * rank(ts_zscore(price, 252))
+naive Sharpe -0.95
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_ef66f907e5c0</title></circle><circle class="pt" cx="606.5" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 21))
+naive Sharpe -0.95
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_eaf6d5751e05</title></circle><circle class="pt" cx="606.1" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_sum(returns, 5)) - 0.5 * rank(-ts_sum(returns, 21))
 naive Sharpe -0.96
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_6baa3ce8c2c2</title></circle><circle class="pt" cx="637.6" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_std(returns, 63)) - 0.5 * rank(ts_zscore(price, 21))
+h_68be31d43124</title></circle><circle class="pt" cx="604.3" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+naive Sharpe -0.97
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_176da54db362</title></circle><circle class="pt" cx="602.7" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 126))
 naive Sharpe -0.98
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_d00833dbd0a2</title></circle><circle class="pt" cx="636.2" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 10))
-naive Sharpe -0.99
+h_ef3768e6ad41</title></circle><circle class="pt" cx="595.3" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 126)) + 0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+naive Sharpe -1.02
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_2ccaf4dce9e6</title></circle><circle class="pt" cx="629.0" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) - 0.7 * rank(momentum(252, 1))
+h_9e663be098d8</title></circle><circle class="pt" cx="591.7" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 10))
 naive Sharpe -1.04
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_ca4dd05c139c</title></circle><circle class="pt" cx="626.4" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) + 0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+h_71930aac8db7</title></circle><circle class="pt" cx="590.1" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 126)) + 0.7 * rank(-ts_sum(returns, 1))
+naive Sharpe -1.05
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_f68b1ed7674d</title></circle><circle class="pt" cx="587.8" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 21)) + 0.7 * rank(-ts_std(returns, 10))
 naive Sharpe -1.06
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_545f576b7518</title></circle><circle class="pt" cx="626.4" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
-naive Sharpe -1.06
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_28554cfe837c</title></circle><circle class="pt" cx="624.2" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 5))
+h_d38fff97d81c</title></circle><circle class="pt" cx="587.6" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 10))
 naive Sharpe -1.07
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_46795e49af3e</title></circle><circle class="pt" cx="622.5" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 21)) + 0.7 * rank(-ts_std(returns, 10))
-naive Sharpe -1.09
+h_7c2b4a979854</title></circle><circle class="pt" cx="574.6" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 10))
+naive Sharpe -1.14
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_0237beab270e</title></circle><circle class="pt" cx="622.0" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(ts_zscore(price, 21)) - 0.3 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
-naive Sharpe -1.09
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_388acb6fca44</title></circle><circle class="pt" cx="621.0" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 10))
-naive Sharpe -1.10
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_035d9e6a5ad2</title></circle><circle class="pt" cx="619.5" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 63))
-naive Sharpe -1.11
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_cb0f193c4dc0</title></circle><circle class="pt" cx="618.4" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 10))
-naive Sharpe -1.12
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_dfe0a3b38fb5</title></circle><circle class="pt" cx="610.5" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 126)) + 0.7 * rank(-ts_sum(returns, 1))
+h_0cd7a2d25f93</title></circle><circle class="pt" cx="569.9" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) + 0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
 naive Sharpe -1.17
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_36f70031fbca</title></circle><circle class="pt" cx="609.2" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_sum(returns, 3)) - 0.7 * rank(-ts_std(returns, 63))
-naive Sharpe -1.18
+h_0dc41a35eaed</title></circle><circle class="pt" cx="567.1" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 21))
+naive Sharpe -1.19
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_51076009061e</title></circle><circle class="pt" cx="609.0" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 63))
-naive Sharpe -1.18
+h_7f27e43d30c5</title></circle><circle class="pt" cx="563.8" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 63))
+naive Sharpe -1.21
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_cab36afdfb88</title></circle><circle class="pt" cx="604.6" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(momentum(63, 21)) + 0.7 * rank(-ts_sum(returns, 21))
-naive Sharpe -1.22
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_6b7d189477a9</title></circle><circle class="pt" cx="604.3" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(ts_zscore(price, 21)) - 0.3 * rank(momentum(42, 5))
-naive Sharpe -1.22
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_f6eaff5ab9de</title></circle><circle class="pt" cx="601.2" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) - 0.3 * rank(ts_zscore(price, 252))
-naive Sharpe -1.24
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_e72ba73d8f9c</title></circle><circle class="pt" cx="599.6" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_std(returns, 10))
+h_34fa6d656a0f</title></circle><circle class="pt" cx="556.4" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 5))
 naive Sharpe -1.25
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_ec87f10c6fb2</title></circle><circle class="pt" cx="596.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) + 0.5 * rank(ts_zscore(price, 252))
-naive Sharpe -1.27
+h_8c784a8e219c</title></circle><circle class="pt" cx="556.3" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(ts_zscore(price, 21)) - 0.3 * rank(momentum(189, 5))
+naive Sharpe -1.25
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_3e3c198140c2</title></circle><circle class="pt" cx="594.3" cy="300.0" r="5" fill="var(--series-1)"><title>rank(ts_zscore(price, 21))
-naive Sharpe -1.29
+h_7502e5e040b6</title></circle><circle class="pt" cx="554.6" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 126)) + 0.7 * rank(-ts_sum(returns, 10))
+naive Sharpe -1.26
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_9def42b98a6f</title></circle><circle class="pt" cx="591.7" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
-naive Sharpe -1.31
+h_2d6ab409e7cb</title></circle><circle class="pt" cx="542.4" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(ts_zscore(price, 21)) - 0.3 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
+naive Sharpe -1.33
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_02e82139a951</title></circle><circle class="pt" cx="586.6" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 126)) + 0.7 * rank(-ts_sum(returns, 5))
-naive Sharpe -1.34
+h_9a778757f4e3</title></circle><circle class="pt" cx="533.4" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(ts_zscore(price, 126)) + 0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
+naive Sharpe -1.39
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_aa6df7a7eaa6</title></circle><circle class="pt" cx="584.1" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 10))
-naive Sharpe -1.36
+h_9f3820836cfe</title></circle><circle class="pt" cx="533.2" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 10))
+naive Sharpe -1.39
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_893760feb739</title></circle><circle class="pt" cx="582.2" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(ts_zscore(price, 21)) - 0.3 * rank(momentum(189, 5))
-naive Sharpe -1.38
+h_f2fe6fe0124a</title></circle><circle class="pt" cx="526.2" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
+naive Sharpe -1.43
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_a2de39ff7960</title></circle><circle class="pt" cx="572.9" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(ts_zscore(price, 126)) + 0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))
-naive Sharpe -1.44
+h_7dcd293127ff</title></circle><circle class="pt" cx="522.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(ts_zscore(price, 21)) - 0.3 * rank(momentum(42, 5))
+naive Sharpe -1.45
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_9fb7307f4b3a</title></circle><circle class="pt" cx="559.9" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
-naive Sharpe -1.54
+h_dd92b75d2868</title></circle><circle class="pt" cx="512.4" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 126)) + 0.7 * rank(-ts_sum(returns, 5))
+naive Sharpe -1.51
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_c04a419e461a</title></circle><circle class="pt" cx="544.0" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 10))
+h_2d1bfc58a248</title></circle><circle class="pt" cx="505.4" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_sum(returns, 10)) + 0.5 * rank(momentum(42, 1))
+naive Sharpe -1.55
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_a1c4a8c8975d</title></circle><circle class="pt" cx="502.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) - 0.3 * rank(ts_zscore(price, 252))
+naive Sharpe -1.57
+DSR 0.000
+DSR effective 0.000
+BH significant: False
+h_bade5008f0b9</title></circle><circle class="pt" cx="489.6" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) + 0.3 * rank(ts_zscore(price, 252))
 naive Sharpe -1.65
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_39048eae1113</title></circle><circle class="pt" cx="538.3" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(ts_zscore(price, 126)) + 0.7 * rank(-ts_sum(returns, 10))
-naive Sharpe -1.69
+h_dbf7250afd04</title></circle><circle class="pt" cx="461.3" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 10)) + 0.7 * rank(-ts_sum(returns, 5))
+naive Sharpe -1.81
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_7711b138dba3</title></circle><circle class="pt" cx="518.5" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
-naive Sharpe -1.83
+h_5487eed4b905</title></circle><circle class="pt" cx="457.7" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
+naive Sharpe -1.84
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_e33cfe04d9ba</title></circle><circle class="pt" cx="500.9" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank(-ts_sum(returns, 10)) + 0.5 * rank(momentum(42, 1))
-naive Sharpe -1.96
+h_69303b00e1ec</title></circle><circle class="pt" cx="387.1" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_sum(returns, 3)) + 0.3 * rank(ts_zscore(price, 252))
+naive Sharpe -2.25
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_7726582d2050</title></circle><circle class="pt" cx="486.0" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank(-ts_std(returns, 10)) + 0.7 * rank(-ts_sum(returns, 5))
-naive Sharpe -2.06
+h_60b12c4db616</title></circle><circle class="pt" cx="344.6" cy="300.0" r="5" fill="var(--series-1)"><title>rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21)))
+naive Sharpe -2.51
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_23ded06717d6</title></circle><circle class="pt" cx="462.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) - 0.5 * rank(-ts_sum(returns, 1))
-naive Sharpe -2.23
+h_cabf2cc1922d</title></circle><circle class="pt" cx="275.4" cy="300.0" r="5" fill="var(--series-1)"><title>0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) - 0.5 * rank(-ts_sum(returns, 1))
+naive Sharpe -2.92
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_74a2475acbda</title></circle><circle class="pt" cx="448.9" cy="300.0" r="5" fill="var(--series-1)"><title>0.7 * rank(-ts_sum(returns, 3)) + 0.3 * rank(ts_zscore(price, 252))
-naive Sharpe -2.33
+h_d2852c222db8</title></circle><circle class="pt" cx="201.7" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) - 0.7 * rank(-ts_sum(returns, 1))
+naive Sharpe -3.35
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_9252bd638955</title></circle><circle class="pt" cx="398.8" cy="300.0" r="5" fill="var(--series-1)"><title>0.3 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) - 0.7 * rank(-ts_sum(returns, 1))
-naive Sharpe -2.69
+h_d79b3c3bf1fe</title></circle><circle class="pt" cx="72.9" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 1))
+naive Sharpe -4.12
 DSR 0.000
-DSR analytic 0.000
+DSR effective 0.000
 BH significant: False
-h_99e5d1ec189d</title></circle><circle class="pt" cx="70.0" cy="300.0" r="5" fill="var(--series-1)"><title>rank(-ts_sum(returns, 1))
-naive Sharpe -5.05
-DSR 0.000
-DSR analytic 0.000
-BH significant: False
-h_21e123ab493e</title></circle></svg><h2>Leaderboard (top 25 of 198 by naive Sharpe)</h2><table><tr><th>Hypothesis</th><th class='num'>Naive Sharpe</th><th class='num'>DSR</th><th class='num'>DSR analytic</th><th class='num'>BH p</th><th class='num'>Haircut Sharpe</th><th class='num'>Days</th></tr><tr><td><code>rank(-ts_sum(returns, 1))</code><br><span class='sub'>h_47a5ae52f82e</span></td><td class='num'>0.68</td><td class='num'>0.001</td><td class='num'>0.147</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1591</td></tr><tr><td><code>0.7 * rank(momentum(189, 21)) - 0.3 * rank(ts_zscore(price, 126))</code><br><span class='sub'>h_16da686c7621</span></td><td class='num'>0.64</td><td class='num'>0.002</td><td class='num'>0.105</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1417</td></tr><tr><td><code>rank(-ts_std(returns, 126))</code><br><span class='sub'>h_da6af17dd62f</span></td><td class='num'>0.63</td><td class='num'>0.001</td><td class='num'>0.108</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1483</td></tr><tr><td><code>0.5 * rank(momentum(189, 21)) + 0.5 * rank(ts_zscore(price, 252))</code><br><span class='sub'>h_dd4928f23c65</span></td><td class='num'>0.62</td><td class='num'>0.002</td><td class='num'>0.090</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1356</td></tr><tr><td><code>rank(momentum(189, 1))</code><br><span class='sub'>h_66da05f186dc</span></td><td class='num'>0.59</td><td class='num'>0.001</td><td class='num'>0.087</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1417</td></tr><tr><td><code>0.5 * rank(-ts_std(returns, 10)) - 0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))</code><br><span class='sub'>h_57d4b6e2751e</span></td><td class='num'>0.54</td><td class='num'>0.000</td><td class='num'>0.077</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1548</td></tr><tr><td><code>rank(-ts_std(returns, 10))</code><br><span class='sub'>h_2ad87793b395</span></td><td class='num'>0.53</td><td class='num'>0.000</td><td class='num'>0.077</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1591</td></tr><tr><td><code>rank(-ts_sum(returns, 3))</code><br><span class='sub'>h_4189ae299105</span></td><td class='num'>0.53</td><td class='num'>0.000</td><td class='num'>0.074</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1591</td></tr><tr><td><code>rank(-ts_sum(returns, 10))</code><br><span class='sub'>h_36be72c93495</span></td><td class='num'>0.51</td><td class='num'>0.000</td><td class='num'>0.070</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1591</td></tr><tr><td><code>0.7 * rank(-ts_std(returns, 63)) - 0.3 * rank(momentum(63, 5))</code><br><span class='sub'>h_1ea635323c6b</span></td><td class='num'>0.50</td><td class='num'>0.000</td><td class='num'>0.064</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1548</td></tr><tr><td><code>rank(momentum(189, 5))</code><br><span class='sub'>h_0296afc9dbb9</span></td><td class='num'>0.50</td><td class='num'>0.000</td><td class='num'>0.058</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1421</td></tr><tr><td><code>rank(-ts_sum(returns, 3))</code><br><span class='sub'>h_749dcf921345</span></td><td class='num'>0.49</td><td class='num'>0.000</td><td class='num'>0.062</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1591</td></tr><tr><td><code>rank(-ts_sum(returns, 1))</code><br><span class='sub'>h_b952176602b1</span></td><td class='num'>0.48</td><td class='num'>0.000</td><td class='num'>0.059</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1591</td></tr><tr><td><code>0.5 * rank(momentum(126, 1)) + 0.5 * rank(momentum(189, 1))</code><br><span class='sub'>h_c7f6d4b0b99c</span></td><td class='num'>0.48</td><td class='num'>0.000</td><td class='num'>0.051</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1417</td></tr><tr><td><code>rank(momentum(189, 1))</code><br><span class='sub'>h_611d35bca2d9</span></td><td class='num'>0.47</td><td class='num'>0.000</td><td class='num'>0.050</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1421</td></tr><tr><td><code>rank(-ts_std(returns, 63))</code><br><span class='sub'>h_46205f279f84</span></td><td class='num'>0.40</td><td class='num'>0.000</td><td class='num'>0.039</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1546</td></tr><tr><td><code>rank(-ts_sum(returns, 5))</code><br><span class='sub'>h_d8235d8b07fe</span></td><td class='num'>0.39</td><td class='num'>0.000</td><td class='num'>0.037</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1591</td></tr><tr><td><code>rank(-ts_sum(returns, 21))</code><br><span class='sub'>h_2423722a1b79</span></td><td class='num'>0.37</td><td class='num'>0.000</td><td class='num'>0.033</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1591</td></tr><tr><td><code>rank(momentum(252, 21))</code><br><span class='sub'>h_82ee12acc5a3</span></td><td class='num'>0.36</td><td class='num'>0.000</td><td class='num'>0.027</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1356</td></tr><tr><td><code>0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) + 0.5 * rank(-ts_std(returns, 63))</code><br><span class='sub'>h_1c0b1dbddc01</span></td><td class='num'>0.35</td><td class='num'>0.000</td><td class='num'>0.029</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1548</td></tr><tr><td><code>rank(momentum(189, 5))</code><br><span class='sub'>h_9d4e63eb5cd5</span></td><td class='num'>0.33</td><td class='num'>0.000</td><td class='num'>0.024</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1417</td></tr><tr><td><code>0.3 * rank(-ts_sum(returns, 5)) - 0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))</code><br><span class='sub'>h_895b540c9cf7</span></td><td class='num'>0.33</td><td class='num'>0.000</td><td class='num'>0.026</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1548</td></tr><tr><td><code>0.5 * rank(momentum(252, 21)) + 0.5 * rank(-ts_std(returns, 63))</code><br><span class='sub'>h_e551e62d3590</span></td><td class='num'>0.32</td><td class='num'>0.000</td><td class='num'>0.022</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1351</td></tr><tr><td><code>rank(-ts_sum(returns, 3))</code><br><span class='sub'>h_117aa9bc017d</span></td><td class='num'>0.30</td><td class='num'>0.000</td><td class='num'>0.021</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1591</td></tr><tr><td><code>0.3 * rank(-ts_sum(returns, 10)) + 0.7 * rank(momentum(189, 21))</code><br><span class='sub'>h_0afca82e3198</span></td><td class='num'>0.29</td><td class='num'>0.000</td><td class='num'>0.019</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1421</td></tr></table></div></body></html>
+h_c9ab947ab633</title></circle></svg><h2>Leaderboard (top 25 of 198 by naive Sharpe)</h2><table><tr><th>Hypothesis</th><th class='num'>Naive Sharpe</th><th class='num'>DSR trial spread</th><th class='num'>DSR analytic</th><th class='num'>DSR effective</th><th class='num'>BH p</th><th class='num'>Haircut Sharpe</th><th class='num'>Days</th></tr><tr><td><code>rank(-ts_sum(returns, 1))</code><br><span class='sub'>h_7562f14342e6</span></td><td class='num'>0.78</td><td class='num'>0.003</td><td class='num'>0.209</td><td class='num'>0.348</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1590</td></tr><tr><td><code>0.7 * rank(momentum(189, 21)) - 0.3 * rank(ts_zscore(price, 126))</code><br><span class='sub'>h_793f8672f38a</span></td><td class='num'>0.74</td><td class='num'>0.004</td><td class='num'>0.156</td><td class='num'>0.278</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1416</td></tr><tr><td><code>rank(-ts_sum(returns, 3))</code><br><span class='sub'>h_02d0712b9af1</span></td><td class='num'>0.60</td><td class='num'>0.001</td><td class='num'>0.102</td><td class='num'>0.198</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1590</td></tr><tr><td><code>rank(momentum(189, 1))</code><br><span class='sub'>h_8fc6e7a5f9af</span></td><td class='num'>0.56</td><td class='num'>0.001</td><td class='num'>0.077</td><td class='num'>0.156</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1416</td></tr><tr><td><code>rank(-ts_sum(returns, 1))</code><br><span class='sub'>h_9e0cdddeb132</span></td><td class='num'>0.55</td><td class='num'>0.001</td><td class='num'>0.085</td><td class='num'>0.170</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1590</td></tr><tr><td><code>rank(-ts_std(returns, 126))</code><br><span class='sub'>h_fedcdab9807a</span></td><td class='num'>0.55</td><td class='num'>0.001</td><td class='num'>0.076</td><td class='num'>0.157</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1482</td></tr><tr><td><code>rank(-ts_sum(returns, 3))</code><br><span class='sub'>h_0f23c09dfa2c</span></td><td class='num'>0.55</td><td class='num'>0.000</td><td class='num'>0.084</td><td class='num'>0.168</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1590</td></tr><tr><td><code>rank(-ts_sum(returns, 10))</code><br><span class='sub'>h_0ccd3bc0058f</span></td><td class='num'>0.49</td><td class='num'>0.000</td><td class='num'>0.061</td><td class='num'>0.131</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1590</td></tr><tr><td><code>rank(-ts_sum(returns, 5))</code><br><span class='sub'>h_e1a952c36b48</span></td><td class='num'>0.47</td><td class='num'>0.000</td><td class='num'>0.058</td><td class='num'>0.125</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1590</td></tr><tr><td><code>rank(momentum(189, 1))</code><br><span class='sub'>h_91628452fd2b</span></td><td class='num'>0.46</td><td class='num'>0.000</td><td class='num'>0.048</td><td class='num'>0.106</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1420</td></tr><tr><td><code>0.3 * rank(-ts_sum(returns, 5)) - 0.7 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))</code><br><span class='sub'>h_45fc01ef0f26</span></td><td class='num'>0.46</td><td class='num'>0.000</td><td class='num'>0.052</td><td class='num'>0.114</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1547</td></tr><tr><td><code>0.5 * rank(momentum(189, 21)) + 0.5 * rank(ts_zscore(price, 252))</code><br><span class='sub'>h_336092717c3d</span></td><td class='num'>0.45</td><td class='num'>0.001</td><td class='num'>0.042</td><td class='num'>0.095</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1355</td></tr><tr><td><code>0.5 * rank(momentum(189, 21)) - 0.5 * rank(-ts_sum(returns, 1))</code><br><span class='sub'>h_f18479ef2c85</span></td><td class='num'>0.43</td><td class='num'>0.000</td><td class='num'>0.042</td><td class='num'>0.095</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1420</td></tr><tr><td><code>0.5 * rank(momentum(126, 1)) + 0.5 * rank(momentum(189, 1))</code><br><span class='sub'>h_215c8d490356</span></td><td class='num'>0.42</td><td class='num'>0.000</td><td class='num'>0.039</td><td class='num'>0.090</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1416</td></tr><tr><td><code>0.3 * rank(-ts_sum(returns, 10)) + 0.7 * rank(momentum(189, 21))</code><br><span class='sub'>h_fe2209ccb77b</span></td><td class='num'>0.41</td><td class='num'>0.000</td><td class='num'>0.037</td><td class='num'>0.086</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1420</td></tr><tr><td><code>0.5 * rank(-ts_std(returns, 10)) - 0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63)))</code><br><span class='sub'>h_bb457b7e25a8</span></td><td class='num'>0.39</td><td class='num'>0.000</td><td class='num'>0.036</td><td class='num'>0.083</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1547</td></tr><tr><td><code>0.7 * rank(-ts_std(returns, 63)) - 0.3 * rank(momentum(63, 5))</code><br><span class='sub'>h_bcb9d703f3a6</span></td><td class='num'>0.39</td><td class='num'>0.000</td><td class='num'>0.035</td><td class='num'>0.082</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1547</td></tr><tr><td><code>rank(momentum(189, 5))</code><br><span class='sub'>h_87b031ed6ef8</span></td><td class='num'>0.38</td><td class='num'>0.000</td><td class='num'>0.031</td><td class='num'>0.074</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1416</td></tr><tr><td><code>rank(momentum(189, 5))</code><br><span class='sub'>h_11657f6f2a6e</span></td><td class='num'>0.35</td><td class='num'>0.000</td><td class='num'>0.027</td><td class='num'>0.065</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1420</td></tr><tr><td><code>rank(-ts_sum(returns, 3))</code><br><span class='sub'>h_db309bef61cb</span></td><td class='num'>0.35</td><td class='num'>0.000</td><td class='num'>0.030</td><td class='num'>0.071</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1590</td></tr><tr><td><code>0.5 * rank((price - ts_min(price, 63)) / (ts_max(price, 63) - ts_min(price, 63))) + 0.5 * rank(-ts_std(returns, 63))</code><br><span class='sub'>h_6a0e7df7e060</span></td><td class='num'>0.34</td><td class='num'>0.000</td><td class='num'>0.028</td><td class='num'>0.067</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1547</td></tr><tr><td><code>rank(-ts_sum(returns, 21))</code><br><span class='sub'>h_841c8e27892a</span></td><td class='num'>0.33</td><td class='num'>0.000</td><td class='num'>0.026</td><td class='num'>0.064</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1590</td></tr><tr><td><code>rank(-ts_std(returns, 63))</code><br><span class='sub'>h_753ef93d5195</span></td><td class='num'>0.32</td><td class='num'>0.000</td><td class='num'>0.024</td><td class='num'>0.059</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1545</td></tr><tr><td><code>rank(-ts_std(returns, 10))</code><br><span class='sub'>h_62ac2d84aec0</span></td><td class='num'>0.30</td><td class='num'>0.000</td><td class='num'>0.022</td><td class='num'>0.056</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1590</td></tr><tr><td><code>rank(momentum(252, 21))</code><br><span class='sub'>h_7018f7aa1917</span></td><td class='num'>0.29</td><td class='num'>0.000</td><td class='num'>0.018</td><td class='num'>0.047</td><td class='num'>1.000</td><td class='num'>0.00</td><td class='num'>1355</td></tr></table></div></body></html>

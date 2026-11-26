@@ -1,60 +1,68 @@
 [
   {
     "market": "noise",
-    "proposals": 237,
+    "proposals": 240,
     "trials": 200,
     "leak_audit_failures": 0,
     "naive": {
       "best_expression": "rank(-ts_sum(returns, 1))",
       "best_q": 0.2,
       "best_rebalance": "M",
-      "best_in_sample_sharpe": 0.683,
-      "significant_at_5pct_raw_one_sided": 1
+      "best_in_sample_sharpe": 0.778,
+      "significant_at_5pct_raw_one_sided": 2
     },
     "alphaledger": {
-      "hurdle_sharpe": 1.888,
+      "effective_trials": 60.0,
+      "hurdle_sharpe_effective": 0.948,
+      "best_dsr_effective": 0.348,
+      "pass_dsr_effective_95": 0,
+      "hurdle_sharpe": 1.863,
       "hurdle_sharpe_analytic": 1.117,
-      "best_dsr": 0.0012,
-      "best_dsr_analytic": 0.1465,
+      "best_dsr": 0.0032,
+      "best_dsr_analytic": 0.2086,
       "pass_dsr_analytic_95": 0,
       "significant_after_bh": 0,
       "pass_dsr_95": 0,
-      "pbo": 0.331,
+      "pbo": 0.478,
       "best_haircut_sharpe_holm": 0.0
     },
     "holdout_of_naive_pick": {
-      "sharpe": -1.278,
-      "psr_vs_zero": 0.0516,
+      "sharpe": -1.371,
+      "psr_vs_zero": 0.0401,
       "days": 404
     },
     "ledger_verifies": true
   },
   {
     "market": "planted",
-    "proposals": 237,
+    "proposals": 240,
     "trials": 200,
     "leak_audit_failures": 0,
     "naive": {
       "best_expression": "0.5 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) + 0.5 * rank(momentum(126, 1))",
       "best_q": 0.1,
       "best_rebalance": "M",
-      "best_in_sample_sharpe": 1.266,
-      "significant_at_5pct_raw_one_sided": 36
+      "best_in_sample_sharpe": 1.385,
+      "significant_at_5pct_raw_one_sided": 41
     },
     "alphaledger": {
-      "hurdle_sharpe": 2.434,
+      "effective_trials": 62.0,
+      "hurdle_sharpe_effective": 0.952,
+      "best_dsr_effective": 0.8418,
+      "pass_dsr_effective_95": 0,
+      "hurdle_sharpe": 2.408,
       "hurdle_sharpe_analytic": 1.117,
-      "best_dsr": 0.0023,
-      "best_dsr_analytic": 0.6195,
+      "best_dsr": 0.0065,
+      "best_dsr_analytic": 0.7236,
       "pass_dsr_analytic_95": 0,
       "significant_after_bh": 0,
       "pass_dsr_95": 0,
-      "pbo": 0.166,
-      "best_haircut_sharpe_holm": 0.327
+      "pbo": 0.141,
+      "best_haircut_sharpe_holm": 0.585
     },
     "holdout_of_naive_pick": {
-      "sharpe": 0.525,
-      "psr_vs_zero": 0.7461,
+      "sharpe": 0.742,
+      "psr_vs_zero": 0.8249,
       "days": 404
     },
     "ledger_verifies": true

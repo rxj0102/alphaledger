@@ -94,6 +94,10 @@ def run_market(name: str, returns, n_trials: int, seed: int) -> dict:
             "significant_at_5pct_raw_one_sided": s["n_significant_raw"],
         },
         "alphaledger": {
+            "effective_trials": round(s["n_effective_trials"], 1),
+            "hurdle_sharpe_effective": round(s["hurdle_sharpe_annual_effective"], 3),
+            "best_dsr_effective": round(s["best_dsr_effective"], 4),
+            "pass_dsr_effective_95": s["n_pass_dsr_effective_95"],
             "hurdle_sharpe": round(s["hurdle_sharpe_annual"], 3),
             "hurdle_sharpe_analytic": round(s["hurdle_sharpe_annual_analytic"], 3),
             "best_dsr": round(s["best_dsr"], 4),

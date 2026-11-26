@@ -128,28 +128,28 @@ def _const(node) -> float:
     raise ExpressionError("expected a numeric constant")
 
 
-def _build(node) -> Fn | float:
+def _build(node, env: dict) -> Fn | float:
     if isinstance(node, ast.Expression):
-        return _build(node.body)
+        return _build(node.body, env)
     if isinstance(node, ast.Constant):
         return _const(node)
     if isinstance(node, ast.Name):
-        if node.id not in VARIABLES:
-            raise ExpressionError(f"unknown variable {node.id!r}; available: {sorted(VARIABLES)}")
-        return VARIABLES[node.id]
+        if node.id not in env:
+            raise ExpressionError(f"unknown variable {node.id!r}; available: {sorted(env)}")
+        return env[node.id]
     if isinstance(node, ast.UnaryOp):
         if isinstance(node.op, ast.USub):
-            inner = _build(node.operand)
+            inner = _build(node.operand, env)
             return -inner if isinstance(inner, (int, float)) else (lambda r, f=inner: -f(r))
         if isinstance(node.op, ast.UAdd):
-            return _build(node.operand)
+            return _build(node.operand, env)
         raise ExpressionError("only unary + and - are allowed")
     if isinstance(node, ast.BinOp):
         ops = {ast.Add: np.add, ast.Sub: np.subtract, ast.Mult: np.multiply, ast.Div: np.divide}
         op = ops.get(type(node.op))
         if op is None:
             raise ExpressionError("only + - * / are allowed")
-        a, b = _build(node.left), _build(node.right)
+        a, b = _build(node.left, env), _build(node.right, env)
         if not callable(a) and not callable(b):
             return float(op(a, b))
 
@@ -166,7 +166,7 @@ def _build(node) -> Fn | float:
         if name in TS_OPS or name in LAG_OPS:
             if len(args) != 2:
                 raise ExpressionError(f"{name}(x, n) takes 2 arguments")
-            x = _build(args[0])
+            x = _build(args[0], env)
             if not callable(x):
                 raise ExpressionError(f"{name}: first argument must be a signal")
             lo = 0 if name in LAG_OPS else 1
@@ -176,7 +176,7 @@ def _build(node) -> Fn | float:
         if name in XS_OPS:
             if len(args) != 1:
                 raise ExpressionError(f"{name}(x) takes 1 argument")
-            x = _build(args[0])
+            x = _build(args[0], env)
             if not callable(x):
                 raise ExpressionError(f"{name}: argument must be a signal")
             op = XS_OPS[name]
@@ -191,7 +191,7 @@ def _build(node) -> Fn | float:
         if name == "clip":
             if len(args) != 3:
                 raise ExpressionError("clip(x, lo, hi) takes 3 arguments")
-            x = _build(args[0])
+            x = _build(args[0], env)
             lo, hi = _const(args[1]), _const(args[2])
             if lo > hi:
                 raise ExpressionError("clip: lo must not exceed hi")
@@ -200,7 +200,10 @@ def _build(node) -> Fn | float:
     raise ExpressionError(f"syntax not allowed: {type(node).__name__}")
 
 
-def compile_expression(text: str) -> Compiled:
+def compile_expression(text: str, extra_vars: dict[str, Fn] | None = None) -> Compiled:
+    """Compile an expression. ``extra_vars`` adds variables, each a function of
+    the returns frame that must itself be causal (the gateway builds them from
+    the point-in-time store, so they only use data released by each date)."""
     if not isinstance(text, str) or not text.strip():
         raise ExpressionError("expression must be a non-empty string")
     if len(text) > 2000:
@@ -212,7 +215,12 @@ def compile_expression(text: str) -> Compiled:
     n_nodes = sum(1 for _ in ast.walk(tree))
     if n_nodes > MAX_NODES:
         raise ExpressionError(f"expression too complex ({n_nodes} nodes, max {MAX_NODES})")
-    fn = _build(tree)
+    env = dict(VARIABLES)
+    for name, f in (extra_vars or {}).items():
+        if not name.isidentifier() or name in FUNCTIONS or name in VARIABLES:
+            raise ExpressionError(f"invalid extra variable name {name!r}")
+        env[name] = f
+    fn = _build(tree, env)
     if not callable(fn):
         raise ExpressionError("expression must depend on the data, not only constants")
     return Compiled(canonical=ast.unparse(tree), fn=fn, n_nodes=n_nodes)

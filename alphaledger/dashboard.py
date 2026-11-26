@@ -42,20 +42,22 @@ def app() -> None:
     c = st.columns(5)
     c[0].metric("Trials counted", s["n_trials"])
     c[1].metric("Best naive Sharpe", f"{s['best_naive_sharpe']:.2f}")
-    c[2].metric("Hurdle Sharpe", f"{s['hurdle_sharpe_annual']:.2f}")
-    c[3].metric("Best DSR", f"{s['best_dsr']:.3f}", help=f"analytic null: {s['best_dsr_analytic']:.3f}")
+    c[2].metric("Hurdle Sharpe", f"{s['hurdle_sharpe_annual_effective']:.2f}",
+                help=f"{s['n_effective_trials']:.1f} effective trials")
+    c[3].metric("Best DSR", f"{s['best_dsr_effective']:.3f}",
+                help=f"effective trials; analytic {s['best_dsr_analytic']:.3f}, trial spread {s['best_dsr']:.3f}")
     c[4].metric("PBO", "n/a" if s["pbo"] is None else f"{s['pbo']:.2f}")
 
-    st.subheader("Naive Sharpe against deflated Sharpe ratio (analytic null)")
-    plot = tab.reset_index()[["hypothesis_id", "label", "sr_annual", "dsr_analytic", "sig_bh"]]
+    st.subheader("Naive Sharpe against deflated Sharpe ratio (effective trials)")
+    plot = tab.reset_index()[["hypothesis_id", "label", "sr_annual", "dsr_effective", "sig_bh"]]
     plot["group"] = plot["sig_bh"].map({True: "significant after BH", False: "not significant"})
-    st.scatter_chart(plot, x="sr_annual", y="dsr_analytic", color="group",
-                     x_label="naive annual Sharpe", y_label="DSR, analytic null")
+    st.scatter_chart(plot, x="sr_annual", y="dsr_effective", color="group",
+                     x_label="naive annual Sharpe", y_label="DSR, effective trials")
 
     st.subheader("Leaderboard")
-    show = tab.reset_index()[["hypothesis_id", "label", "sr_annual", "dsr", "dsr_analytic", "p_bh", "sig_bh",
+    show = tab.reset_index()[["hypothesis_id", "label", "sr_annual", "dsr_effective", "dsr_analytic", "dsr", "p_bh", "sig_bh",
                               "sr_haircut_holm", "t_obs"]]
-    show.columns = ["id", "hypothesis", "naive Sharpe", "DSR", "DSR analytic", "BH p", "BH sig",
+    show.columns = ["id", "hypothesis", "naive Sharpe", "DSR effective", "DSR analytic", "DSR trial spread", "BH p", "BH sig",
                     "haircut Sharpe", "days"]
     st.dataframe(show, hide_index=True, use_container_width=True)
 

@@ -175,10 +175,11 @@ def test_duplicates_mixed_with_originals_keep_clean_ids():
     # and returns_matrix produced a NaN column that crashed the report.
     r = make_market(n_assets=30, n_days=400, seed=4)
     lg = Ledger()
-    build = lambda x: quantile_long_short(momentum(x, 60, 5))
-    a, _ = run_logged(lg, {"s": "a"}, build, r)
-    b, _ = run_logged(lg, {"s": "b"}, build, r)
-    run_logged(lg, {"s": "a"}, build, r)  # duplicate of a
+    build_a = lambda x: quantile_long_short(momentum(x, 60, 5))
+    build_b = lambda x: quantile_long_short(momentum(x, 120, 5))
+    a, _ = run_logged(lg, {"s": "a"}, build_a, r)
+    b, _ = run_logged(lg, {"s": "b"}, build_b, r)
+    run_logged(lg, {"s": "a"}, build_a, r)  # duplicate of a
     m = lg.returns_matrix()
     assert sorted(m.columns) == sorted([a, b])
     h = lg.hypotheses()
@@ -186,3 +187,99 @@ def test_duplicates_mixed_with_originals_keep_clean_ids():
     from alphaledger.report import build_report
 
     assert "<svg" in build_report(lg)
+
+
+# ---------------------------------------------------------------- signing and anchoring
+
+
+def _rewrite_history(lg):
+    """The attack from the review: hide a loser, inflate a winner, recompute every hash."""
+    from alphaledger.ledger.store import GENESIS, entry_hash
+
+    c = lg.conn
+    c.execute("DROP TRIGGER entries_no_update")
+    c.execute("DROP TRIGGER entries_no_delete")
+    c.execute("DELETE FROM entries WHERE seq >= 3")
+    c.execute("UPDATE entries SET payload = replace(payload, '0.3', '2.5') WHERE seq = 2")
+    prev = GENESIS
+    for seq, ts, k, h, p, pl in c.execute(
+        "SELECT seq, ts, kind, hypothesis_id, parent_id, payload FROM entries ORDER BY seq"
+    ).fetchall():
+        nh = entry_hash(seq, ts, k, h, p, pl, prev)
+        c.execute("UPDATE entries SET prev_hash=?, hash=? WHERE seq=?", (prev, nh, seq))
+        prev = nh
+    c.commit()
+
+
+def _two_trials(lg):
+    a = lg.register({"s": 1})
+    lg.record(a, {"sharpe": 0.3})
+    b = lg.register({"s": 2})
+    lg.record(b, {"sharpe": -1.0})
+
+
+def test_unsigned_chain_can_be_rewritten():
+    # Documents the limitation that motivated signing: without a key the
+    # rewritten chain verifies.
+    lg = Ledger()
+    _two_trials(lg)
+    _rewrite_history(lg)
+    assert lg.verify().ok
+
+
+def test_signed_chain_rewrite_is_detected(tmp_path):
+    p = tmp_path / "s.db"
+    lg = Ledger(p, key="secret")
+    _two_trials(lg)
+    assert lg.verify().ok
+    _rewrite_history(lg)
+    lg.close()
+    rep = Ledger(p, key="secret").verify()
+    assert not rep.ok and "signature" in rep.reason
+    assert not Ledger(p, key="wrong").verify().ok
+
+
+def test_anchor_catches_rewrite_without_key(tmp_path):
+    anchors = tmp_path / "anchors.jsonl"
+    lg = Ledger(tmp_path / "a.db")
+    _two_trials(lg)
+    lg.anchor(anchors, "study")
+    assert lg.verify_anchors(anchors, "study").ok
+    _rewrite_history(lg)
+    rep = lg.verify_anchors(anchors, "study")
+    assert not rep.ok and ("rewritten" in rep.reason or "truncated" in rep.reason)
+
+
+def test_anchor_name_required(tmp_path):
+    anchors = tmp_path / "anchors.jsonl"
+    lg = Ledger()
+    _two_trials(lg)
+    lg.anchor(anchors, "x")
+    assert not lg.verify_anchors(anchors, "other").ok
+
+
+def test_old_unsigned_ledger_fails_when_signatures_required(tmp_path):
+    p = tmp_path / "o.db"
+    lg = Ledger(p)
+    _two_trials(lg)
+    lg.close()
+    assert not Ledger(p, key="k").verify().ok
+
+
+def test_identical_portfolios_count_once():
+    r = make_market(n_assets=30, n_days=400, seed=4)
+    lg = Ledger()
+    build = lambda x: quantile_long_short(momentum(x, 60, 5))
+    a, _ = run_logged(lg, {"expr": "x"}, build, r)
+    b, _ = run_logged(lg, {"expr": "x * 1"}, build, r)
+    assert lg.n_trials() == 1
+    assert lg.canonical_id(b) == a
+    assert list(lg.returns_matrix().columns) == [a]
+
+
+def test_cache_sees_writes_from_another_connection(tmp_path):
+    p = tmp_path / "c.db"
+    reader = Ledger(p)
+    writer = Ledger(p)
+    _two_trials(writer)
+    assert reader.n_trials() == 2 and len(reader.hypotheses()) == 2

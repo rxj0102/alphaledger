@@ -3,7 +3,10 @@
 Each source has a pure parser (tested offline against fixture text) and a thin
 fetch function that does the network call. Availability rules:
 
-* Daily prices and factor returns: available at the close of the same day.
+* Daily prices: available at the close of the same day.
+* Ken French factor returns: the library is updated monthly with a lag, so a
+  day's factor return is treated as available at the end of the following
+  month. This is conservative; use it when factors feed a signal.
 * FRED/ALFRED macro series: available at each vintage's ``realtime_start``,
   so revisions never leak backwards.
 
@@ -51,7 +54,7 @@ def parse_ken_french_daily(text: str, source: str = "ken_french") -> pd.DataFram
     long["value"] = long["value"].astype(float) / 100.0
     long["entity"] = "FF"
     long["period"] = long["date"]
-    long["available_at"] = long["date"]
+    long["available_at"] = long["date"] + pd.offsets.MonthEnd(0) + pd.offsets.MonthEnd(1)
     long["source"] = source
     return long[["entity", "field", "period", "available_at", "value", "source"]]
 

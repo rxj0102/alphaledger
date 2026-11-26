@@ -5,6 +5,18 @@ Run:
     alphaledger-mcp --ledger research.db --synthetic          # demo data
     alphaledger-mcp --ledger research.db --returns-csv r.csv  # your own daily returns
 
+Recommended locked-down deployment (the operator runs this, the agent only
+gets the MCP connection):
+    export ALPHALEDGER_KEY=...            # signing key, never given to the agent
+    alphaledger-mcp --ledger /srv/research.db --returns-csv r.csv \
+        --registry /srv/registry.jsonl --anchors /srv/anchors/anchors.jsonl
+
+Point-in-time macro data from FRED (needs FRED_API_KEY in the environment):
+    alphaledger-mcp ... --fred INDPRO --fred UNRATE
+Each series becomes a variable (indpro, unrate) holding, on every date, the
+latest value released by then. This path makes network calls and has only
+been tested offline against fixtures.
+
 The CSV must have dates in the first column and one column of daily simple
 returns per asset.
 
@@ -30,7 +42,7 @@ INSTRUCTIONS = (
     "permanently logged, including failures, and results are deflated for the number "
     "of trials. Prefer a few well-motivated hypotheses over large blind sweeps. "
     "Give a rationale for each test and set parent_id when refining an earlier idea. "
-    "Judge results by deflated_sharpe_ratio, not the naive Sharpe. The holdout is "
+    "Judge results by deflated_sharpe_ratio_effective, not the naive Sharpe. The holdout is "
     "hidden and can be opened only a few times; use it for your final candidate."
 )
 
@@ -90,6 +102,11 @@ def main(argv=None) -> None:  # pragma: no cover - process entry point
     ap.add_argument("--holdout-frac", type=float, default=0.2)
     ap.add_argument("--holdout-budget", type=int, default=3)
     ap.add_argument("--cost-bps", type=float, default=5.0)
+    ap.add_argument("--lag", type=int, default=2, help="2 = trade at the next close (default), 1 = same close")
+    ap.add_argument("--registry", help="file binding each dataset to one ledger")
+    ap.add_argument("--anchors", help="append-only file the ledger head is anchored to after every write")
+    ap.add_argument("--fred", action="append", default=[], metavar="SERIES",
+                    help="add a FRED series as a point-in-time variable (repeatable)")
     args = ap.parse_args(argv)
 
     if args.synthetic:
@@ -97,8 +114,26 @@ def main(argv=None) -> None:  # pragma: no cover - process entry point
     else:
         returns = pd.read_csv(args.returns_csv, index_col=0, parse_dates=True)
         label = f"csv:{args.returns_csv}"
+    pit, fields = None, None
+    if args.fred:
+        import os
+
+        from ..data import PITStore
+        from ..data.sources import fetch_fred_vintages
+
+        api_key = os.environ.get("FRED_API_KEY")
+        if not api_key:
+            raise SystemExit("set FRED_API_KEY to use --fred")
+        pit = PITStore()
+        for series in args.fred:
+            pit.add(fetch_fred_vintages(series, api_key))
+        fields = {series.lower(): series for series in args.fred}
+    from ..ledger.store import load_key
+
     gw = ResearchGateway(returns, args.ledger, holdout_frac=args.holdout_frac,
-                         holdout_budget=args.holdout_budget, cost_bps=args.cost_bps, data_label=label)
+                         holdout_budget=args.holdout_budget, cost_bps=args.cost_bps, data_label=label,
+                         execution_lag=args.lag, pit=pit, pit_fields=fields, key=load_key(),
+                         anchor_path=args.anchors, registry_path=args.registry)
     build_server(gw).run("stdio")
 
 

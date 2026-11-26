@@ -37,7 +37,8 @@ def test_ken_french_parse():
     assert len(df) == 12
     row = df[(df["field"] == "Mkt-RF") & (df["period"] == "1926-07-02")]
     assert abs(row["value"].iloc[0] - 0.0045) < 1e-12
-    assert (df["available_at"] == df["period"]).all()
+    # Published with a lag: a July 1926 return is only treated as known at end of August.
+    assert (df["available_at"] == pd.Timestamp("1926-08-31")).all()
 
 
 def test_fred_vintages_into_pit_store():
