@@ -10,7 +10,7 @@ AI agents can propose and backtest hundreds of trading signals in an afternoon. 
 |---|---|---|
 | 1 | Point-in-time data layer, vectorized backtester, momentum sanity check | Done |
 | 2 | Append-only, hash-chained hypothesis ledger with lineage | Done |
-| 3 | Stats engine: Deflated Sharpe Ratio, PBO via CSCV, FDR control, t-stat haircuts | Planned |
+| 3 | Stats engine: Deflated Sharpe Ratio, PBO via CSCV, FDR control, t-stat haircuts | Done |
 | 4 | Leakage detectors tested against planted leaks | Planned |
 | 5 | MCP gateway so an agent can only reach data and backtests through the ledger | Planned |
 | 6 | Dashboard and case study on agent-generated signals | Planned |
@@ -94,6 +94,52 @@ After deleting entry 24: verifies=False, first bad entry=24, reason: missing ent
 ```
 
 Removing the content hash check or the duplicate detection from the code makes the test suite fail, so the tests are checking the real guarantees.
+
+## Week 3 design: the stats engine
+
+`alphaledger/stats/` turns the ledger into trial-adjusted results. `evaluate(ledger)` scores every recorded trial at once.
+
+| Method | Module | What it answers |
+|---|---|---|
+| Probabilistic Sharpe Ratio | `sharpe.py` | How confident are we the true Sharpe beats zero, given sample length, skew and fat tails? |
+| Deflated Sharpe Ratio | `sharpe.py` | Same, but against the best Sharpe expected from N zero-skill trials |
+| Minimum track record length | `sharpe.py` | How many observations are needed for a given confidence |
+| Probability of Backtest Overfitting (CSCV) | `pbo.py` | How often does the in-sample winner land below the out-of-sample median? |
+| Bonferroni, Holm, Benjamini-Hochberg, Benjamini-Yekutieli | `multiple.py` | Which trials stay significant after correcting for the number tested |
+| Harvey and Liu haircut Sharpe | `multiple.py` | What Sharpe survives once the p-value is adjusted for multiple testing |
+
+Choices made in `evaluate`:
+- N is the ledger trial count, which includes failed runs. Hiding failures cannot lower the bar.
+- The variance of trial Sharpes is estimated from the trials themselves, as the DSR paper requires.
+- Sharpe ratios are per period and kurtosis is Pearson kurtosis (3 for a normal), matching the papers.
+
+**Checked against published numbers:**
+- The numerical example in Bailey and Lopez de Prado (2014): annual SR 2.5, T = 1250, skew -3, kurtosis 10, N = 100, trial variance 0.5. The paper reports DSR 0.9004. alphaledger gives 0.9004.
+- A monthly worked example (quantt.co.uk DSR guide): hurdle 0.3797 and DSR 0.624 reproduced.
+- The 15 p-value example in Benjamini and Hochberg (1995): BH rejects 4, Bonferroni and Holm reject 3, as published.
+- All four p-value corrections match statsmodels to 1e-12 on random inputs.
+
+Removing the non-normality term from the PSR, or making PBO pick the worst in-sample trial, makes the suite fail. Building the demo also exposed a real bug: very large t-stats underflowed to p = 0 and crashed the haircut. It is fixed with tail-safe formulas and covered by a regression test.
+
+Demo:
+
+```
+python examples/week3_deflation_demo.py
+```
+
+It runs the same 60-variant momentum sweep on two synthetic markets (150 assets, 8 years, seed 21, 5 bps costs). Output:
+
+| | Pure noise | Planted momentum |
+|---|---|---|
+| Best naive annual Sharpe | 0.50 | 3.12 |
+| Hurdle Sharpe for 60 trials | 0.47 | 0.70 |
+| Deflated Sharpe Ratio of best | 0.540 | 1.000 |
+| Significant before correction | 0 | 60 |
+| Significant after BH | 0 | 60 |
+| Passing DSR 0.95 | 0 | 60 |
+| PBO | 0.52 | 0.22 |
+
+On noise, PBO is close to the 0.5 expected when picking the winner is a coin flip, and the best trial barely clears the hurdle Sharpe. With a real edge, every variant survives correction. PBO is still 0.22 because the variants all share the same edge, so which one wins in sample is partly luck. PBO measures how reliable the choice among trials is, not whether the edge is real. Both views are needed.
 
 ## License
 
