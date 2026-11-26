@@ -12,7 +12,7 @@ AI agents can propose and backtest hundreds of trading signals in an afternoon. 
 | 2 | Append-only, hash-chained hypothesis ledger with lineage | Done |
 | 3 | Stats engine: Deflated Sharpe Ratio, PBO via CSCV, FDR control, t-stat haircuts | Done |
 | 4 | Leakage detectors tested against planted leaks | Done |
-| 5 | MCP gateway so an agent can only reach data and backtests through the ledger | Planned |
+| 5 | MCP gateway so an agent can only reach data and backtests through the ledger | Done |
 | 6 | Dashboard and case study on agent-generated signals | Planned |
 
 ## Week 1 design
@@ -177,6 +177,46 @@ Output (80 synthetic assets with a planted momentum edge, 4 years, seed 0):
 The backward fill row is the dangerous kind: a believable Sharpe of 3.26 against 2.05 for the clean version of the same signal, with no soft check firing. Only the truncation test sees it. The full-sample z-score shows that leaks do not always help; they make the backtest wrong in either direction.
 
 **Known limitation.** A discrete choice made with hindsight, such as picking a signal's sign from its full-sample correlation with future returns, is invisible to any data-level check when the edge is strong: every truncated sample picks the same sign, so the output never changes. A test documents this. The defence is the ledger: trying both signs is two trials, and the deflated statistics account for it.
+
+## Week 5 design: the agent gateway
+
+`alphaledger/gateway/` is the only door between an agent and the data. It is exposed as an MCP server, so Claude Desktop, Claude Code or any MCP client can use it.
+
+**A safe signal language instead of code.** The agent writes expressions such as `rank(momentum(252, 21)) - rank(ts_std(returns, 63))`. They are parsed with a whitelist of syntax, names and functions: no imports, no attribute access, no indexing, no lambdas, bounded size. Every operator looks only backwards (there is no negative delay), and the test suite verifies each one with the Week 4 truncation and perturbation checks. The leak audit still runs on every trial as a second line of defence.
+
+**No backtest without a ledger entry.** `test_signal` compiles, registers, audits, backtests and records in one step. Malformed expressions are rejected without counting as trials because nothing was measured. A repeat of an earlier expression (even with different spacing) is logged and linked but not counted twice.
+
+**Deflated numbers in every reply.** Each result carries the trial count so far, the hurdle Sharpe for that many trials and the deflated Sharpe ratio next to the naive stats.
+
+**A hidden holdout with a budget.** The last 20% of dates are invisible. `evaluate_holdout` opens them for one hypothesis at a time, at most 3 times by default. Each use is written to the ledger, so the budget survives restarts and cannot be reset.
+
+| MCP tool | Purpose |
+|---|---|
+| `describe_data` | Universe, in-sample dates, holdout status, portfolio rules, trial count |
+| `expression_language` | Reference for the signal language |
+| `test_signal` | Register, audit and backtest one expression |
+| `leaderboard` | Top trials with deflated Sharpe, FDR significance, haircut Sharpe, PBO |
+| `lineage` | Ancestors and children of a hypothesis |
+| `verify_ledger` | Check the hash chain and return the head hash |
+| `evaluate_holdout` | Open the hidden period for one hypothesis, within budget |
+
+Run it:
+
+```
+pip install -e .[mcp]
+alphaledger-mcp --ledger research.db --synthetic             # demo market
+alphaledger-mcp --ledger research.db --returns-csv returns.csv  # dates in column 1, one column of daily returns per asset
+```
+
+Add it to Claude Code:
+
+```
+claude mcp add alphaledger -- alphaledger-mcp --ledger /full/path/research.db --synthetic
+```
+
+Or to Claude Desktop in `claude_desktop_config.json` under `mcpServers`, with command `alphaledger-mcp` and the same arguments.
+
+**Tests** cover every operator for causality, 20 hostile or malformed expressions, the hidden holdout, budget enforcement across restarts, duplicate handling, and real tool calls both in process and over stdio through the MCP client. Writing them caught two real bugs: MCP runs tools in worker threads, which SQLite rejected (fixed with a cross-thread connection and serialized writes), and repeated expressions crashed the response (fixed).
 
 ## License
 

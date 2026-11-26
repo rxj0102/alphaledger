@@ -25,6 +25,7 @@ import hashlib
 import json
 import math
 import sqlite3
+import threading
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -127,7 +128,9 @@ class VerifyReport:
 class Ledger:
     def __init__(self, path: str | Path = ":memory:", clock=None):
         self.path = str(path)
-        self.conn = sqlite3.connect(self.path)
+        # Servers call tools from worker threads; appends are serialized by a lock.
+        self.conn = sqlite3.connect(self.path, check_same_thread=False)
+        self._lock = threading.RLock()
         self.conn.executescript(SCHEMA)
         self._clock = clock or (lambda: datetime.now(timezone.utc).isoformat(timespec="microseconds"))
 
@@ -145,7 +148,7 @@ class Ledger:
         if kind not in KINDS:
             raise ValueError(f"kind must be one of {KINDS}")
         payload_json = canonical(payload)
-        with self.conn:  # one transaction per append
+        with self._lock, self.conn:  # one serialized transaction per append
             row = self.conn.execute(
                 "SELECT seq, hash FROM entries ORDER BY seq DESC LIMIT 1"
             ).fetchone()
@@ -238,8 +241,11 @@ class Ledger:
             }
         self._append("result", payload, hypothesis_id=hypothesis_id)
 
-    def note(self, text: str, hypothesis_id: str | None = None) -> None:
-        self._append("note", {"text": text}, hypothesis_id=hypothesis_id)
+    def note(self, text: str, hypothesis_id: str | None = None, data: dict | None = None) -> None:
+        payload = {"text": text}
+        if data:
+            payload.update(data)
+        self._append("note", payload, hypothesis_id=hypothesis_id)
 
     # ------------------------------------------------------------ queries
     def _exists(self, hid: str) -> bool:

@@ -14,7 +14,11 @@ dependencies = ["numpy>=1.26", "pandas>=2.1"]
 
 [project.optional-dependencies]
 data = ["yfinance>=0.2"]
-dev = ["pytest>=8", "statsmodels>=0.14"]
+mcp = ["mcp>=2.3"]
+dev = ["pytest>=8", "statsmodels>=0.14", "mcp>=2.3"]
+
+[project.scripts]
+alphaledger-mcp = "alphaledger.gateway.mcp_server:main"
 
 [tool.setuptools.packages.find]
 include = ["alphaledger*"]
