@@ -149,17 +149,51 @@ def load_key(value: str | bytes | None = None, env: str = "ALPHALEDGER_KEY") -> 
     return value if isinstance(value, bytes) else value.encode()
 
 
+def generate_signing_keypair(private_path: str | Path, public_path: str | Path) -> None:
+    """Write a new Ed25519 key pair as PEM files (needs the ``cryptography`` package)."""
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+
+    priv = Ed25519PrivateKey.generate()
+    Path(private_path).write_bytes(priv.private_bytes(
+        serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption()))
+    os.chmod(private_path, 0o600)
+    Path(public_path).write_bytes(priv.public_key().public_bytes(
+        serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo))
+
+
+def load_signer(path: str | Path):
+    from cryptography.hazmat.primitives import serialization
+
+    return serialization.load_pem_private_key(Path(path).read_bytes(), password=None)
+
+
+def load_verify_key(path: str | Path):
+    from cryptography.hazmat.primitives import serialization
+
+    return serialization.load_pem_public_key(Path(path).read_bytes())
+
+
 class Ledger:
     """Append-only, hash-chained, optionally signed hypothesis ledger.
 
-    ``key``: with a secret key every entry also carries an HMAC of its hash.
-    Without the key, someone who rewrites the file can recompute every hash and
-    the chain alone will still verify; with the key they cannot forge the
-    signatures. Keep the key outside the agent's reach (an environment variable
-    of the server process, a secrets manager).
+    Two ways to sign every entry's hash:
+
+    * ``key``: a shared secret (HMAC-SHA256). Only someone holding the same
+      secret can verify, so it proves integrity to the operator but not to an
+      outside auditor.
+    * ``signer``: an Ed25519 private key. Anyone with the matching public key
+      (``verify_key``) can verify, without being able to sign. Use this when a
+      third party (an investment committee, an auditor, a client) must be able
+      to check the ledger.
+
+    Without a key, someone who rewrites the file can recompute every hash and
+    the chain alone will still verify. Keep secrets and private keys outside
+    the agent's reach. A ledger opened with only ``verify_key`` is read-only.
     """
 
-    def __init__(self, path: str | Path = ":memory:", clock=None, key: str | bytes | None = None):
+    def __init__(self, path: str | Path = ":memory:", clock=None, key: str | bytes | None = None,
+                 signer=None, verify_key=None):
         self.path = str(path)
         # Servers call tools from worker threads; appends are serialized by a lock.
         self.conn = sqlite3.connect(self.path, check_same_thread=False)
@@ -169,12 +203,19 @@ class Ledger:
         if "sig" not in cols:  # ledgers created before signing existed
             self.conn.execute("ALTER TABLE entries ADD COLUMN sig TEXT")
         self._key = key if isinstance(key, (bytes, type(None))) else key.encode()
+        self._signer = signer
+        self._verify_key = verify_key or (signer.public_key() if signer is not None else None)
         self._clock = clock or (lambda: datetime.now(timezone.utc).isoformat(timespec="microseconds"))
         self._reset_cache()
 
     @property
     def signed(self) -> bool:
-        return self._key is not None
+        """True if signatures can be checked with what this ledger was opened with."""
+        return self._key is not None or self._verify_key is not None
+
+    @property
+    def read_only(self) -> bool:
+        return self._verify_key is not None and self._signer is None and self._key is None
 
     def close(self) -> None:
         self.conn.close()
@@ -229,11 +270,30 @@ class Ledger:
 
     # ------------------------------------------------------------ low level
     def _sign(self, h: str) -> str | None:
+        if self._signer is not None:
+            return "ed25519:" + self._signer.sign(h.encode()).hex()
         return hmac.new(self._key, h.encode(), hashlib.sha256).hexdigest() if self._key else None
+
+    def _check_sig(self, h: str, sig: str | None) -> bool:
+        if sig is None:
+            return False
+        if sig.startswith("ed25519:"):
+            if self._verify_key is None:
+                return False
+            try:
+                self._verify_key.verify(bytes.fromhex(sig[8:]), h.encode())
+                return True
+            except Exception:
+                return False
+        if self._key is None:
+            return False
+        return hmac.compare_digest(sig, hmac.new(self._key, h.encode(), hashlib.sha256).hexdigest())
 
     def _append(self, kind: str, payload: dict, hypothesis_id=None, parent_id=None) -> dict:
         if kind not in KINDS:
             raise ValueError(f"kind must be one of {KINDS}")
+        if self.read_only:
+            raise LedgerError("ledger opened with a public key only is read-only")
         payload_json = canonical(payload)
         with self._lock, self.conn:  # one serialized transaction per append
             row = self.conn.execute(
@@ -287,7 +347,7 @@ class Ledger:
             if require_signatures:
                 if not self.signed:
                     return VerifyReport(False, len(rows), seq, "signatures required but no key given")
-                if sig is None or not hmac.compare_digest(sig, self._sign(h)):
+                if not self._check_sig(h, sig):
                     return VerifyReport(False, len(rows), seq, "signature missing or invalid")
             prev = h
             expected_seq += 1
@@ -301,6 +361,28 @@ class Ledger:
             )
             return VerifyReport(expected_head in known, len(rows), None, reason)
         return VerifyReport(True, len(rows))
+
+    def has_signatures(self) -> bool:
+        return self.conn.execute("SELECT 1 FROM entries WHERE sig IS NOT NULL LIMIT 1").fetchone() is not None
+
+    def integrity(self) -> dict:
+        """Plain-language integrity status, for reports.
+
+        A hash chain that verifies without the signing key only shows the file
+        is internally consistent; it does not show it was not rewritten.
+        """
+        rep = self.verify()
+        sigs = self.has_signatures()
+        if not rep.ok:
+            status = "BROKEN"
+        elif self.signed:
+            status = "verified with signing key"
+        elif sigs:
+            status = "chain intact, signatures NOT checked (no key)"
+        else:
+            status = "chain intact, unsigned (a full rewrite would not be detected)"
+        return {"ok": rep.ok, "status": status, "signed_entries": sigs, "key_checked": self.signed,
+                "entries": rep.n_entries, "reason": rep.reason}
 
     # ------------------------------------------------------------ anchoring
     def anchor(self, anchor_path: str | Path, name: str) -> dict:
@@ -496,3 +578,15 @@ class Ledger:
     def children(self, hypothesis_id: str) -> list[str]:
         self._sync()
         return [h for h in self._hyp_order if self._hyp[h]["parent_id"] == hypothesis_id]
+
+
+def keygen_main(argv=None) -> None:  # pragma: no cover
+    import argparse
+
+    ap = argparse.ArgumentParser(prog="alphaledger-keygen",
+                                 description="Create an Ed25519 key pair for signing ledgers")
+    ap.add_argument("private_key")
+    ap.add_argument("public_key")
+    a = ap.parse_args(argv)
+    generate_signing_keypair(a.private_key, a.public_key)
+    print(f"private key: {a.private_key} (keep it from the agent)\npublic key: {a.public_key} (share with auditors)")

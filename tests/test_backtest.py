@@ -97,15 +97,24 @@ def test_metrics_by_hand():
 
 
 def test_delisting_return_applied_once_and_position_closed():
-    idx = pd.bdate_range("2024-01-01", periods=6)
-    r = pd.DataFrame({"A": [0.01, 0.01, 0.01, None, None, None], "B": [0.0] * 6}, index=idx)
-    w = pd.DataFrame({"A": [1.0] * 6, "B": [0.0] * 6}, index=idx)
+    idx = pd.bdate_range("2024-01-01", periods=10)
+    r = pd.DataFrame({"A": [0.01, 0.01, 0.01] + [None] * 7, "B": [0.0] * 10}, index=idx)
+    w = pd.DataFrame({"A": [1.0] * 10, "B": [0.0] * 10}, index=idx)
     res = run_backtest(w, r, lag=1)
     # Held A from day 2; A stops trading after day 3, so day 4 takes -30%, then nothing.
-    assert res.returns.tolist() == pytest.approx([0.01, 0.01, -0.30, 0.0, 0.0])
+    assert res.returns.tolist() == pytest.approx([0.01, 0.01, -0.30] + [0.0] * 6)
     assert res.delistings == 1
     zero = run_backtest(w, r, lag=1, delist_return=None)
-    assert zero.returns.tolist() == pytest.approx([0.01, 0.01, 0.0, 0.0, 0.0])
+    assert zero.returns.tolist() == pytest.approx([0.01, 0.01] + [0.0] * 7)
+
+
+def test_short_trailing_gap_is_vendor_lag_not_delisting():
+    # Regression from review: one ticker missing only the latest day took -30%.
+    idx = pd.bdate_range("2024-01-01", periods=6)
+    r = pd.DataFrame({"A": [0.01] * 5 + [None], "B": [0.0] * 6}, index=idx)
+    w = pd.DataFrame({"A": [1.0] * 6, "B": [0.0] * 6}, index=idx)
+    res = run_backtest(w, r, lag=1)
+    assert res.delistings == 0 and res.returns.iloc[-1] == 0.0
 
 
 def test_interior_gap_is_not_a_delisting():

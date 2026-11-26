@@ -283,3 +283,39 @@ def test_cache_sees_writes_from_another_connection(tmp_path):
     writer = Ledger(p)
     _two_trials(writer)
     assert reader.n_trials() == 2 and len(reader.hypotheses()) == 2
+
+
+# ---------------------------------------------------------------- public-key signing
+
+
+def test_ed25519_third_party_can_verify_without_signing(tmp_path):
+    pytest.importorskip("cryptography")
+    from alphaledger.ledger import generate_signing_keypair, load_signer, load_verify_key
+
+    priv, pub = tmp_path / "op.pem", tmp_path / "op.pub"
+    generate_signing_keypair(priv, pub)
+    p = tmp_path / "e.db"
+    lg = Ledger(p, signer=load_signer(priv))
+    _two_trials(lg)
+    lg.close()
+    auditor = Ledger(p, verify_key=load_verify_key(pub))
+    assert auditor.verify().ok
+    with pytest.raises(LedgerError, match="read-only"):
+        auditor.register({"s": 3})  # a public key cannot add entries
+    # A rewrite by anyone without the private key is caught by the auditor.
+    _rewrite_history(auditor)
+    auditor.close()
+    rep = Ledger(p, verify_key=load_verify_key(pub)).verify()
+    assert not rep.ok and "signature" in rep.reason
+
+
+def test_ed25519_wrong_public_key_fails(tmp_path):
+    pytest.importorskip("cryptography")
+    from alphaledger.ledger import generate_signing_keypair, load_signer, load_verify_key
+
+    generate_signing_keypair(tmp_path / "a.pem", tmp_path / "a.pub")
+    generate_signing_keypair(tmp_path / "b.pem", tmp_path / "b.pub")
+    lg = Ledger(tmp_path / "x.db", signer=load_signer(tmp_path / "a.pem"))
+    _two_trials(lg)
+    assert Ledger(tmp_path / "x.db", verify_key=load_verify_key(tmp_path / "a.pub")).verify().ok
+    assert not Ledger(tmp_path / "x.db", verify_key=load_verify_key(tmp_path / "b.pub")).verify().ok

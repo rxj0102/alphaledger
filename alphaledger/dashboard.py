@@ -23,14 +23,18 @@ def app() -> None:
     if not path or not os.path.exists(path):
         st.info("Enter the path of a ledger file.")
         return
-    with Ledger(path) as lg:
+    from alphaledger.ledger.store import load_key, load_verify_key
+
+    pub = os.environ.get("ALPHALEDGER_PUBLIC_KEY")
+    with Ledger(path, key=load_key(), verify_key=load_verify_key(pub) if pub else None) as lg:
         view = ledger_view(lg)
         hyp = lg.hypotheses().set_index("hypothesis_id")
 
     c = st.columns(4)
     c[0].metric("Hypotheses logged", view["n_hypotheses"])
     c[1].metric("Ledger entries", view["n_entries"])
-    c[2].metric("Chain", "verified" if view["chain_ok"] else "BROKEN")
+    c[2].metric("Integrity", "verified" if view["fully_verified"] else ("BROKEN" if not view["chain_ok"] else "not proven"),
+                help=view["integrity"])
     c[3].metric("Head hash", view["head_hash"][:12])
     st.caption("Trial status: " + ", ".join(f"{k} {v}" for k, v in sorted(view["status_counts"].items())))
 

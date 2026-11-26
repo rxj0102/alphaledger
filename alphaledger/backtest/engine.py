@@ -54,8 +54,15 @@ def run_backtest(
     cost_bps: float = 0.0,
     allow_zero_lag: bool = False,
     delist_return: float | None = -0.30,
+    min_delist_gap: int = 5,
 ) -> BacktestResult:
-    """``delist_return=None`` treats missing returns after delisting as zero."""
+    """``delist_return=None`` treats missing returns after delisting as zero.
+
+    An asset counts as delisted only if its returns stop at least
+    ``min_delist_gap`` rows before the end of the sample. A shorter trailing
+    gap is usually a data vendor lag on the latest days, not a delisting, and
+    earns zero.
+    """
     if not isinstance(lag, int) or lag < 0:
         raise ValueError("lag must be a non-negative integer")
     if lag == 0 and not allow_zero_lag:
@@ -86,9 +93,15 @@ def run_backtest(
     # Delistings: NaN after an asset's last valid return.
     last_valid = r.apply(lambda c: c.last_valid_index())
     pos = pd.Series(range(len(idx)), index=idx)
-    after = pd.DataFrame(
-        {c: (pos > pos[last_valid[c]]) if last_valid[c] is not None else pd.Series(False, index=idx)
-         for c in cols}, index=idx)
+    n_rows = len(idx)
+
+    def _after(c):
+        lv = last_valid[c]
+        if lv is None or n_rows - 1 - pos[lv] < min_delist_gap:
+            return pd.Series(False, index=idx)
+        return pos > pos[lv]
+
+    after = pd.DataFrame({c: _after(c) for c in cols}, index=idx)
     first_after = after & ~after.shift(1, fill_value=False)
     filled = r.fillna(0.0)
     delistings = 0

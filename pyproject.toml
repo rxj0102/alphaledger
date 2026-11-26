@@ -16,12 +16,14 @@ dependencies = ["numpy>=1.26", "pandas>=2.2"]
 data = ["yfinance>=0.2"]
 mcp = ["mcp>=2.3"]
 dashboard = ["streamlit>=1.40"]
-dev = ["pytest>=8", "statsmodels>=0.14", "mcp>=2.3", "streamlit>=1.40"]
+signing = ["cryptography>=42"]
+dev = ["pytest>=8", "statsmodels>=0.14", "mcp>=2.3", "streamlit>=1.40", "cryptography>=42"]
 
 [project.scripts]
 alphaledger-mcp = "alphaledger.gateway.mcp_server:main"
 alphaledger-report = "alphaledger.report:main"
 alphaledger-dashboard = "alphaledger.dashboard:main"
+alphaledger-keygen = "alphaledger.ledger.store:keygen_main"
 
 [tool.setuptools.packages.find]
 include = ["alphaledger*"]

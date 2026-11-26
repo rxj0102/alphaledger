@@ -23,13 +23,15 @@ def ledger_view(ledger: Ledger) -> dict:
     """Everything the report and the dashboard show, as plain Python data."""
     trials = ledger.trials()
     status_counts = trials["status"].fillna("untested").value_counts().to_dict()
-    ver = ledger.verify()
+    integ = ledger.integrity()
     out = {
         "n_hypotheses": int(len(trials)),
         "status_counts": {str(k): int(v) for k, v in status_counts.items()},
-        "chain_ok": ver.ok,
+        "chain_ok": integ["ok"],
+        "integrity": integ["status"],
+        "fully_verified": integ["ok"] and integ["key_checked"],
         "head_hash": ledger.head_hash(),
-        "n_entries": ver.n_entries,
+        "n_entries": integ["entries"],
         "evaluation": None,
     }
     try:
@@ -67,7 +69,7 @@ table { border-collapse: collapse; width: 100%; font-size: 13px; }
 th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
 th { color: var(--text-secondary); font-weight: 500; } td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 code { font-size: 12px; } .badge { display:inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; }
-.ok { color: var(--good); } .bad { color: var(--critical); }
+.ok { color: var(--good); } .bad { color: var(--critical); } .warn { color: var(--text-secondary); }
 .legend { font-size: 12px; color: var(--text-secondary); display:flex; gap:16px; margin: 4px 0 8px; }
 .sw { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:-1px; }
 svg text { fill: var(--text-secondary); font-size: 11px; }
@@ -126,10 +128,17 @@ def _scatter(tab: pd.DataFrame, hurdle: float, w: int = 960, h: int = 340, ycol:
 def build_report(ledger: Ledger, title: str = "alphaledger report", top: int = 25) -> str:
     view = ledger_view(ledger)
     e = view["evaluation"]
-    chain = ('<span class="ok">verified</span>' if view["chain_ok"] else '<span class="bad">BROKEN</span>')
+    if not view["chain_ok"]:
+        chain = '<span class="bad">BROKEN</span>'
+    elif view["fully_verified"]:
+        chain = '<span class="ok">verified</span>'
+    else:
+        chain = '<span class="warn">not proven</span>'
+
     tiles = [("Hypotheses logged", str(view["n_hypotheses"]),
               ", ".join(f"{k} {v}" for k, v in sorted(view["status_counts"].items()))),
-             ("Ledger chain", chain, f"{view['n_entries']} entries, head {view['head_hash'][:12]}")]
+             ("Ledger integrity", chain, f"{view['integrity']}; {view['n_entries']} entries, "
+                                         f"head {view['head_hash'][:12]}")]
     body = []
     if e is not None:
         s, tab = e["summary"], e["table"]
@@ -180,8 +189,12 @@ def main(argv=None) -> None:  # pragma: no cover
     ap.add_argument("ledger")
     ap.add_argument("-o", "--output", default="report.html")
     ap.add_argument("--title", default="alphaledger report")
+    ap.add_argument("--public-key", help="operator's Ed25519 public key (PEM) to verify signatures")
     args = ap.parse_args(argv)
-    with Ledger(args.ledger) as lg:
+    from .ledger.store import load_key, load_verify_key
+
+    vk = load_verify_key(args.public_key) if args.public_key else None
+    with Ledger(args.ledger, key=load_key(), verify_key=vk) as lg:  # ALPHALEDGER_KEY, if set
         html_text = build_report(lg, args.title)
     with open(args.output, "w") as f:
         f.write(html_text)

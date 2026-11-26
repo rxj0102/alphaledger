@@ -8,7 +8,7 @@ AI agents can propose and backtest hundreds of trading signals in an afternoon. 
 
 ```
 pip install -e .[dev]
-pytest                                            # 162 tests, plus 4 live data checks (ALPHALEDGER_NETWORK_TESTS=1)
+pytest                                            # 173 tests, plus 4 live data checks (ALPHALEDGER_NETWORK_TESTS=1)
 python examples/controlled_study.py               # blind vs pre-registered agents on 40 markets, about 15 minutes
 python examples/week6_case_study.py               # one 200-trial blind agent in detail, about 10 minutes
 python examples/real_data_study.py                # both agents on 49 real US industries, about 10 minutes
@@ -31,7 +31,8 @@ On real data (49 US industry portfolios, 1990 to 2026), neither agent's pick cou
 | 4 | Leakage detectors tested against planted leaks | Done |
 | 5 | MCP gateway so an agent can only reach data and backtests through the ledger | Done |
 | 6 | Dashboard, HTML report and case study on agent-generated signals | Done |
-| Review | Signed and anchored ledger, locked trial accounting, effective trials, point-in-time variables, next-day execution, delistings, controlled study | Done |
+| Review 1 | Signed and anchored ledger, locked trial accounting, effective trials, point-in-time variables, next-day execution, delistings, controlled study | Done |
+| Review 2 | Public-key signing for auditors, registry that recognises trimmed copies, honest integrity status in reports, post-holdout marking, vendor-lag gaps, survivor-free declaration | Done |
 
 ## Week 1 design
 
@@ -39,7 +40,7 @@ On real data (49 US industry portfolios, 1990 to 2026), neither agent's pick cou
 
 **Backtester** (`alphaledger/backtest/engine.py`). Weights decided from the close of day t with `lag=1` earn the return from the close of day t to the close of day t+1, which means trading in the same closing auction the signal was computed from. That is optimistic, especially for short-horizon signals. `lag=2` trades at the next close and is the conservative setting; the research gateway uses it by default. A zero lag raises `LookAheadError` unless explicitly allowed. Turnover based transaction costs, monthly rebalancing support, and standard metrics (Sharpe, t-stat, max drawdown, hit rate, turnover).
 
-**Missing returns.** A gap inside an asset's history (a halt) earns zero. A missing return after an asset's last valid one means it stopped trading: a position held at that point takes a one-off delisting return of -30% (close to the average performance-related delisting return reported by Shumway, 1997) and is then closed. Treating those returns as zero would silently hide the losses. `delist_return=None` switches this off.
+**Missing returns.** A gap inside an asset's history (a halt) earns zero. A missing return after an asset's last valid one means it stopped trading: a position held at that point takes a one-off delisting return of -30% (close to the average performance-related delisting return reported by Shumway, 1997) and is then closed. Treating those returns as zero would silently hide the losses. Only a gap of at least 5 trading days before the end of the sample counts as a delisting; a shorter trailing gap is usually a data vendor lag on the latest days and earns zero (this was a bug found in review: one ticker missing yesterday's price took a -30% hit). `delist_return=None` switches delistings off.
 
 **Free data loaders** (`alphaledger/data/sources.py`), all run live on 26 Nov 2026 (`ALPHALEDGER_NETWORK_TESTS=1 pytest tests/test_sources.py`; off by default so CI does not depend on outside services):
 - Ken French daily factors. The library is updated monthly with a lag, so a day's factor return is treated as known only at the end of the following month. Checked against the live file: the copy downloaded on 26 Nov 2026 was built from the September 2026 CRSP database and dated 26 Oct 2026.
@@ -94,10 +95,15 @@ These are synthetic markets built to test the pipeline. They say nothing about r
 
 **Tamper evidence, and its limits.** Each entry stores the hash of the previous entry, and its own hash covers its content plus that link. Careless edits, deletions or reordering break the chain and `verify()` reports the first bad entry. SQLite triggers reject UPDATE and DELETE, but anyone with the file can drop them. The hash chain alone does not stop a deliberate rewrite either: a test shows that deleting a losing trial, inflating a winner and recomputing every hash still verifies. Two protections close that gap:
 
-- **Signing.** `Ledger(path, key=...)` stores an HMAC of every entry hash. Without the key, a rewrite cannot produce valid signatures, and `verify()` rejects it (tested with the same attack). The key belongs to the operator, for example in the `ALPHALEDGER_KEY` environment variable of the server process, never to the agent.
+- **Signing.** Every entry hash can be signed in one of two ways. A rewrite without the signing secret cannot produce valid signatures and `verify()` rejects it (tested with the same attack).
+  - `Ledger(path, key=...)`: a shared secret (HMAC-SHA256), for example the `ALPHALEDGER_KEY` environment variable of the server process. Only someone with the same secret can verify, so it proves integrity to the operator but not to anyone else.
+  - `Ledger(path, signer=...)`: an Ed25519 private key (`alphaledger-keygen operator.pem operator.pub`, then `ALPHALEDGER_SIGNING_KEY_FILE` for the server). Anyone with the public key can verify, with `Ledger(path, verify_key=...)` or `alphaledger-report --public-key`, and a ledger opened with only the public key is read-only. This is what lets an investment committee or an auditor check the record without being able to forge it (tested, including over stdio).
+  - Either way the secret belongs to the operator, never to the agent.
 - **Anchoring.** `anchor(path, name)` appends the current head to an external, append-only file (a git repository that gets pushed, another machine, a write-once bucket). `verify_anchors()` then detects any rewrite or truncation up to an anchored entry, with or without a key (tested). The gateway anchors after every write when given an anchor file.
 
 **Trial counting.** `n_trials()` counts distinct tested portfolios. Failed runs count. Re-running an identical spec (even with keys in a different order) is logged but not counted again, and neither is a different expression that produces exactly the same returns, such as `x`, `x * 1` or `rank(rank(x))`. Correlated but different trials still count separately here; the stats engine estimates the effective number of independent trials.
+
+**Honest status in reports.** A chain that verifies without the key only shows the file is internally consistent. Reports and the dashboard say verified only when signatures were actually checked; otherwise they say not proven, with the reason (unsigned, or signed but no key given). Review found the earlier report printed verified for a ledger whose signatures had been forged, because it was opened without the key.
 
 **Scale.** Queries are served from an in-memory index that is synced incrementally from the database, so a test does not reparse every stored return series. Another process writing to the same file is picked up on the next query (tested).
 
@@ -229,11 +235,15 @@ The backward fill row is the dangerous kind: a believable Sharpe of 3.26 against
 
 **Deflated numbers in every reply.** Each result carries the trial count, the effective number of independent trials, and the three deflated Sharpe ratios next to the naive stats. Data-level warnings such as survivorship are reported once in `describe_data` instead of on every trial.
 
-**A hidden holdout with a budget.** The last 20% of dates are invisible. `evaluate_holdout` opens them for one hypothesis at a time, at most 3 times by default. Each use is written to the ledger as a structured entry, so the budget survives restarts.
+**A hidden holdout with a budget.** The last 20% of dates are invisible. `evaluate_holdout` opens them for one hypothesis at a time, at most 3 times by default. Each use is written to the ledger as a structured entry, so the budget survives restarts. Once the holdout has been opened, every later test is flagged `after_holdout_look` in its reply and on the leaderboard, because it may be shaped by what the holdout showed and its own holdout result would no longer be out of sample.
+
+**Survivorship.** The survivorship warning is a heuristic that cannot tell a universe that never delists by construction (industry portfolios, indices) from today's survivors. The operator can declare a universe survivor-free (`--survivor-free`); the declaration is recorded in the ledger binding and shown in `describe_data`.
+
+**Input limits.** Expressions are capped at 2,000 characters and 80 syntax nodes, rationales at 4,000 characters.
 
 **What the gateway can and cannot enforce.** It controls what passes through it. It cannot stop an agent that has its own copy of the data from backtesting elsewhere; that has to come from deployment: the operator runs the server, holds the data and the signing key, and the agent only gets the MCP connection. Within that setup:
 - the ledger is bound to the dataset and configuration on first use, so it cannot be reopened with a bigger holdout budget, a different holdout, other costs, another lag or other data fields (tested);
-- with `--registry`, a dataset can only ever be served from one ledger, so starting a fresh ledger file does not reset the trial count or the holdout budget (tested);
+- with `--registry`, a dataset can only ever be served from one ledger, so starting a fresh ledger file does not reset the trial count or the holdout budget. The registry recognises a dataset by its exact hash and by a MinHash sketch of its (date, asset, value) cells, so dropping a day, cutting the history or dropping assets still counts as the same data (tested; review found that trimming one day used to buy a fresh ledger). Values are compared to 6 decimals: a dataset deliberately altered by more than that is treated as new, so the operator must control which data is loaded;
 - with `ALPHALEDGER_KEY` set and `--anchors`, history cannot be rewritten without detection (tested over stdio).
 
 | MCP tool | Purpose |
@@ -389,6 +399,9 @@ The statistical methods follow Bailey and Lopez de Prado (2012, 2014), Bailey, B
 - The backtester models linear costs only: no borrow costs, market impact or capacity limits. The -30% delisting return is a single assumption, not security-specific.
 - The leak audit samples cut dates rather than proving causality, so a leak confined to a few dates can slip through. The causal expression language is the main defence; the audit is a second line.
 - yfinance universes are survivorship-biased, and the survivorship check will say so.
+- Ken French data is not point-in-time. Each monthly release recomputes the full history from the latest CRSP database and current industry definitions, so past returns can change slightly between releases. The real-data study uses the release of 26 Oct 2026 throughout.
+- The real-data study assumes industry portfolios can be traded at 5 bps. In practice that means trading sector funds or all constituent stocks, which costs more for small industries.
+- Shared-secret (HMAC) signing only proves integrity to whoever holds the secret; use Ed25519 signing when someone else must verify.
 - The language model's own memory of market history is a leak no data-level check can see (see Li et al. above). Synthetic or anonymized data avoids it.
 - A discrete choice made with hindsight can pass the leak audit when the edge is strong (see Week 4); only the trial count catches it.
 - The effective number of trials is an estimate: the cluster threshold (0.5) is a choice, and both estimators are built from noisy sample correlations. The three DSR versions bracket the answer rather than settle it.

@@ -38,7 +38,7 @@ def test_report_is_self_contained_and_complete(ledger_path):
     assert not re.search(r"(src|href)=['\"]https?://", page)  # no external assets
     assert page.count("<circle") == 3
     assert "rank(momentum(120, 5))" in page
-    assert "verified" in page
+    assert "not proven" in page  # unsigned ledger: intact, but a rewrite would not be detected
     assert "prefers-color-scheme: dark" in page
 
 
@@ -56,7 +56,7 @@ def test_dashboard_renders(ledger_path, monkeypatch):
     labels = [m.label for m in at.metric]
     assert "Trials counted" in labels and "Best DSR" in labels
     values = {m.label: m.value for m in at.metric}
-    assert values["Chain"] == "verified"
+    assert values["Integrity"] == "not proven"
     assert values["Trials counted"] == "4"
     assert len(at.dataframe) == 1
 
@@ -65,3 +65,27 @@ def _run_app():
     from alphaledger.dashboard import app
 
     app()
+
+
+def test_report_does_not_claim_verified_without_key(tmp_path):
+    # Regression from review: a signed ledger with forged signatures showed as verified
+    # when the report was built without the key.
+    p = tmp_path / "s.db"
+    lg = Ledger(p, key="k")
+    h = lg.register({"s": 1})
+    lg.record(h, {"sharpe": 0.3})
+    lg.conn.execute("DROP TRIGGER entries_no_update")
+    lg.conn.execute("UPDATE entries SET sig='forged'")
+    lg.conn.commit()
+    lg.close()
+    no_key = build_report(Ledger(p), "t")
+    assert ">verified<" not in no_key and "signatures NOT checked" in no_key
+    assert "BROKEN" in build_report(Ledger(p, key="k"), "t")
+
+
+def test_report_verified_only_with_key(tmp_path):
+    p = tmp_path / "ok.db"
+    lg = Ledger(p, key="k")
+    h = lg.register({"s": 1})
+    lg.record(h, {"sharpe": 0.3})
+    assert ">verified<" in build_report(lg, "t")

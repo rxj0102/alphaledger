@@ -29,6 +29,7 @@ import math
 import os
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from ..backtest import run_backtest
@@ -46,6 +47,44 @@ REBALANCE = {"D": None, "W": "W", "M": "M"}
 
 def _r(x, nd=4):
     return None if x is None or (isinstance(x, float) and not math.isfinite(x)) else round(float(x), nd)
+
+
+SKETCH_K = 1024
+
+
+def data_sketch(df: pd.DataFrame, k: int = SKETCH_K, decimals: int = 6) -> tuple[list[int], int]:
+    """Bottom-k MinHash sketch of a returns panel's (date, asset, value) cells.
+
+    Two panels that share most of their cells have similar sketches even if
+    one drops a day, drops assets or adds a few rows, so a registry can
+    recognise a trimmed or subset copy of a dataset it has already bound to a
+    ledger. Values are rounded to ``decimals`` so float noise does not hide a
+    copy; deliberate changes larger than that are not recognised.
+    """
+    long = df.stack().dropna()
+    if long.empty:
+        return [], 0
+    dates = long.index.get_level_values(0)
+    names = long.index.get_level_values(1).astype(str)
+    cells = pd.DataFrame({
+        "d": pd.DatetimeIndex(dates).strftime("%Y%m%d").astype("int64"),
+        "a": pd.util.hash_array(names.to_numpy(dtype=object)),
+        "v": long.to_numpy(dtype=float).round(decimals),
+    })
+    h = pd.util.hash_pandas_object(cells, index=False).to_numpy()
+    u = np.unique(h)
+    return [int(x) for x in u[:k]], int(len(u))
+
+
+def sketch_containment(a: list[int], na: int, b: list[int], nb: int, k: int = SKETCH_K) -> float:
+    """Estimated share of the smaller panel's cells that also appear in the other."""
+    if not a or not b:
+        return 0.0
+    union_k = sorted(set(a) | set(b))[:k]
+    sa, sb = set(a), set(b)
+    j = sum(1 for x in union_k if x in sa and x in sb) / len(union_k)
+    inter = j * (na + nb) / (1 + j)
+    return float(inter / min(na, nb))
 
 
 def pit_variable(pit: PITStore, field: str, lag_days: int = 0):
@@ -72,7 +111,8 @@ class ResearchGateway:
                  audit_leaks: bool = True, data_label: str = "unlabelled", execution_lag: int = 2,
                  pit: PITStore | None = None, pit_fields: dict[str, str] | None = None,
                  pit_lag_days: int = 0, key: str | bytes | None = None,
-                 anchor_path: str | Path | None = None, registry_path: str | Path | None = None):
+                 anchor_path: str | Path | None = None, registry_path: str | Path | None = None,
+                 survivor_free: bool = False, signer=None):
         if not 0 < holdout_frac < 0.5:
             raise ValueError("holdout_frac must be in (0, 0.5)")
         if execution_lag < 1:
@@ -104,16 +144,22 @@ class ResearchGateway:
             "pit_fields": dict(sorted((pit_fields or {}).items())),
             "pit_lag_days": pit_lag_days,
             "pit_hash": data_fingerprint(pit.to_frame()) if pit is not None and pit_fields else None,
+            "survivor_free": survivor_free,
         }
         self.name = "gw_" + sha256(canonical(self.config))[:16]
         if isinstance(ledger, Ledger):
             self.ledger = ledger
         else:
-            self.ledger = Ledger(ledger, key=key)
+            self.ledger = Ledger(ledger, key=key, signer=signer)
         if registry_path is not None:
             self._bind_registry(registry_path)
         self._bind_config()
-        self._data_warnings = [f.detail for f in [survivorship_check(self._in_sample)] if f]
+        # The survivorship heuristic cannot tell a survivor-free universe that
+        # never delists (industry portfolios, indices) from today's survivors,
+        # so the operator can declare it; the declaration is part of the binding.
+        self._data_warnings = [] if survivor_free else [
+            f.detail for f in [survivorship_check(self._in_sample)] if f]
+        self.survivor_free = survivor_free
 
     # ------------------------------------------------------------ binding
     def _bind_config(self) -> None:
@@ -130,28 +176,40 @@ class ResearchGateway:
         self.ledger.note("gateway_config", data={"gateway_config": self.config})
         self._anchor()
 
-    def _bind_registry(self, registry_path) -> None:
+    def _bind_registry(self, registry_path, overlap: float = 0.5) -> None:
+        """Bind this dataset to this ledger, refusing a second ledger for the same data.
+
+        A dataset counts as the same if its exact hash matches, or if at least
+        ``overlap`` of the smaller panel's cells appear in a registered one, so
+        trimming a day or dropping assets does not buy a fresh ledger.
+        """
         if self.ledger.path == ":memory:":
             raise ValueError("a registry needs a ledger file, not an in-memory ledger")
         me = os.path.abspath(self.ledger.path)
         key = self.config["data_hash"]
-        bound = None
+        sketch, n_cells = data_sketch(self._full)
         if os.path.exists(registry_path):
             with open(registry_path) as f:
                 for line in f:
-                    if line.strip():
-                        rec = json.loads(line)
+                    if not line.strip():
+                        continue
+                    rec = json.loads(line)
+                    same = rec["data_hash"] == key
+                    if not same and rec.get("sketch"):
+                        c = sketch_containment(sketch, n_cells, rec["sketch"], rec["n_cells"])
+                        same = c >= overlap
+                    if same:
+                        if rec["ledger"] != me:
+                            raise LedgerError(
+                                f"this dataset (or most of it) is already bound to the ledger at "
+                                f"{rec['ledger']}; starting a new ledger would reset the trial count "
+                                "and holdout budget. Use that ledger."
+                            )
                         if rec["data_hash"] == key:
-                            bound = rec["ledger"]
-                            break
-        if bound is None:
-            with open(registry_path, "a") as f:
-                f.write(canonical({"data_hash": key, "ledger": me, "label": self.data_label}) + "\n")
-        elif bound != me:
-            raise LedgerError(
-                f"this dataset is already bound to the ledger at {bound}; starting a new ledger "
-                "would reset the trial count and holdout budget. Use that ledger."
-            )
+                            return
+        with open(registry_path, "a") as f:
+            f.write(canonical({"data_hash": key, "ledger": me, "label": self.data_label,
+                               "sketch": sketch, "n_cells": n_cells}) + "\n")
 
     def _anchor(self) -> None:
         if self.anchor_path is not None:
@@ -175,6 +233,8 @@ class ResearchGateway:
                           f"close of day t is traded at the close of day t+{self.execution_lag - 1}"),
             "cost_bps": self.cost_bps,
             "data_warnings": self._data_warnings,
+            "universe": ("declared survivor-free by the operator" if self.survivor_free
+                         else "not declared survivor-free"),
             "trials_so_far": self.ledger.n_trials(),
             "ledger_signed": self.ledger.signed,
         }
@@ -224,8 +284,16 @@ class ResearchGateway:
                      "original paper and is very strict when trials differ for systematic reasons."),
         }
 
+    MAX_RATIONALE = 4000
+
+    def _first_holdout_seq(self) -> int | None:
+        seqs = [n["seq"] for n in self.ledger.notes() if isinstance(n.get("holdout_eval"), dict)]
+        return min(seqs) if seqs else None
+
     def test_signal(self, expression: str, q: float = 0.2, rebalance_freq: str = "M",
                     rationale: str = "", parent_id: str | None = None) -> dict:
+        if len(rationale or "") > self.MAX_RATIONALE:
+            return {"status": "rejected", "error": f"rationale longer than {self.MAX_RATIONALE} characters"}
         try:
             compiled = self._compile(expression)
         except ExpressionError as exc:
@@ -251,6 +319,10 @@ class ResearchGateway:
         self._anchor()
         trial = self.ledger.trials().set_index("hypothesis_id").loc[hid]
         out = {"hypothesis_id": hid, "status": trial["status"], "expression": compiled.canonical}
+        if self._first_holdout_seq() is not None:
+            out["after_holdout_look"] = True
+            out["holdout_warning"] = ("this test was run after the holdout was opened, so it may be shaped by "
+                                      "what the holdout showed; its holdout result would not be out of sample")
         if stats is None:
             out["error"] = "the signal raised an error while running; it still counts as a trial"
             return out
@@ -280,7 +352,9 @@ class ResearchGateway:
         except ValueError as exc:
             return {"error": str(exc)}
         tab = ev.table.head(top)
-        specs = self.ledger.hypotheses().set_index("hypothesis_id")["spec"]
+        hyp = self.ledger.hypotheses().set_index("hypothesis_id")
+        specs = hyp["spec"]
+        first_look = self._first_holdout_seq()
         rows = [{
             "hypothesis_id": hid,
             "expression": specs[hid].get("expression"),
@@ -290,6 +364,7 @@ class ResearchGateway:
             "deflated_sharpe_ratio_trial_spread": _r(row.dsr),
             "significant_after_fdr": bool(row.sig_bh),
             "haircut_sharpe": _r(row.sr_haircut_holm, 3),
+            "tested_after_holdout_look": bool(first_look is not None and hyp.loc[hid, "seq"] > first_look),
         } for hid, row in tab.iterrows()]
         s = ev.summary()
         return {

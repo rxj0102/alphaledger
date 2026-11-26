@@ -332,3 +332,76 @@ def test_mcp_locked_down_deployment_over_stdio(tmp_path, monkeypatch):
 
     assert not Ledger(tmp_path / "s.db").verify(require_signatures=True).ok  # no key, no proof
     assert Ledger(tmp_path / "s.db", key="operator-secret").verify().ok
+
+
+def test_registry_blocks_trimmed_or_subset_copies(tmp_path):
+    # Regression from review: dropping one day changed the data hash and bought a fresh ledger.
+    reg = tmp_path / "registry.jsonl"
+    ResearchGateway(R, tmp_path / "a.db", registry_path=reg, audit_leaks=False).ledger.close()
+    for i, variant in enumerate([R.iloc[1:], R.iloc[:-30], R.iloc[:, 10:], R.iloc[5:, :-5]]):
+        with pytest.raises(Exception, match="already bound"):
+            ResearchGateway(variant, tmp_path / f"v{i}.db", registry_path=reg, audit_leaks=False)
+    other = make_market(n_assets=40, n_days=252 * 3, drift_vol=0.0008, seed=99)
+    ResearchGateway(other, tmp_path / "other.db", registry_path=reg, audit_leaks=False)  # unrelated data is fine
+
+
+def test_sketch_containment_estimates():
+    from alphaledger.gateway.service import data_sketch, sketch_containment
+
+    a, na = data_sketch(R)
+    b, nb = data_sketch(R.iloc[:, :20])  # half the assets
+    assert sketch_containment(a, na, b, nb) > 0.9  # the half is fully inside the whole
+    c, nc = data_sketch(make_market(n_assets=40, n_days=252 * 3, seed=98))
+    assert sketch_containment(a, na, c, nc) < 0.05
+
+
+def test_trials_after_holdout_look_are_marked(gw):
+    a = gw.test_signal("rank(momentum(120, 5))", rationale="x")
+    assert "after_holdout_look" not in a
+    gw.evaluate_holdout(a["hypothesis_id"])
+    b = gw.test_signal("rank(momentum(60, 5))", rationale="after seeing the holdout")
+    assert b["after_holdout_look"] is True
+    rows = {r["hypothesis_id"]: r for r in gw.leaderboard()["top"]}
+    assert rows[a["hypothesis_id"]]["tested_after_holdout_look"] is False
+    assert rows[b["hypothesis_id"]]["tested_after_holdout_look"] is True
+
+
+def test_rationale_size_is_bounded(gw):
+    out = gw.test_signal("rank(momentum(60, 5))", rationale="x" * 5000)
+    assert out["status"] == "rejected" and gw.ledger.n_trials() == 0
+
+
+def test_survivor_free_declaration_is_explicit_and_bound(tmp_path):
+    long = make_market(n_assets=40, n_days=252 * 5, seed=3)
+    assert ResearchGateway(long).describe()["data_warnings"]
+    g = ResearchGateway(long, tmp_path / "l.db", survivor_free=True)
+    assert g.describe()["data_warnings"] == [] and "survivor-free" in g.describe()["universe"]
+    g.ledger.close()
+    with pytest.raises(Exception, match="different dataset or configuration"):
+        ResearchGateway(long, tmp_path / "l.db")
+
+
+def test_mcp_with_public_key_signing_over_stdio(tmp_path):
+    pytest.importorskip("cryptography")
+    import os
+
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+
+    from alphaledger.ledger import Ledger, generate_signing_keypair, load_verify_key
+
+    generate_signing_keypair(tmp_path / "op.pem", tmp_path / "op.pub")
+    env = dict(os.environ, ALPHALEDGER_SIGNING_KEY_FILE=str(tmp_path / "op.pem"))
+    env.pop("ALPHALEDGER_KEY", None)
+    params = StdioServerParameters(command=sys.executable, env=env, args=[
+        "-m", "alphaledger.gateway.mcp_server", "--ledger", str(tmp_path / "s.db"), "--synthetic"])
+
+    async def go():
+        async with stdio_client(params) as (r, w):
+            async with ClientSession(r, w) as s:
+                await s.initialize()
+                await s.call_tool("test_signal", {"expression": "rank(momentum(252, 21))", "rationale": "x"})
+
+    asyncio.run(asyncio.wait_for(go(), timeout=120))
+    auditor = Ledger(tmp_path / "s.db", verify_key=load_verify_key(tmp_path / "op.pub"))
+    assert auditor.verify().ok and auditor.integrity()["status"] == "verified with signing key"

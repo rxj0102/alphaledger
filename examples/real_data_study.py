@@ -34,28 +34,34 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from controlled_study import PRE_REGISTERED, blind_proposals  # noqa: E402
 
-from alphaledger.data.sources import fetch_ken_french_industries  # noqa: E402
+from alphaledger.data.sources import KEN_FRENCH_INDUSTRY_URL, parse_ken_french_industries  # noqa: E402
 from alphaledger.gateway import ResearchGateway  # noqa: E402
 from alphaledger.report import build_report  # noqa: E402
 from alphaledger.stats import evaluate  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-CACHE = ROOT / "data_cache" / "ff49_industries_daily.csv.gz"
+CACHE = ROOT / "data_cache" / "49_Industry_Portfolios_daily_CSV.zip"
 OUT = ROOT / "case_study"
 
 
 def load() -> pd.DataFrame:
-    if CACHE.exists():
-        return pd.read_csv(CACHE, index_col=0, parse_dates=True)
-    df = fetch_ken_french_industries(49)
-    CACHE.parent.mkdir(exist_ok=True)
-    df.to_csv(CACHE)
-    return df
+    """Cache the original zip, not a re-saved table, so every run parses the
+    same bytes (a CSV round trip changes the last bits of some floats)."""
+    import io
+    import urllib.request
+    import zipfile
+
+    if not CACHE.exists():
+        CACHE.parent.mkdir(exist_ok=True)
+        with urllib.request.urlopen(KEN_FRENCH_INDUSTRY_URL.format(n=49), timeout=120) as r:
+            CACHE.write_bytes(r.read())
+    with zipfile.ZipFile(io.BytesIO(CACHE.read_bytes())) as z:
+        return parse_ken_french_industries(z.read(z.namelist()[0]).decode("latin-1"))
 
 
 def run(agent: str, returns: pd.DataFrame, seed: int = 2026) -> dict:
     gw = ResearchGateway(returns, holdout_frac=0.2, holdout_budget=1, cost_bps=5,
-                         data_label="Ken French 49 industries, value weighted, daily")
+                         data_label="Ken French 49 industries, value weighted, daily", survivor_free=True)
     if agent == "blind":
         for expr, q, freq in blind_proposals(seed, 100):
             if gw.ledger.n_trials() >= 100:

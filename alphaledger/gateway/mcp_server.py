@@ -7,7 +7,10 @@ Run:
 
 Recommended locked-down deployment (the operator runs this, the agent only
 gets the MCP connection):
-    export ALPHALEDGER_KEY=...            # signing key, never given to the agent
+    export ALPHALEDGER_KEY=...            # shared-secret signing, never given to the agent
+    # or, so outside auditors can verify with a public key:
+    alphaledger-keygen operator.pem operator.pub
+    export ALPHALEDGER_SIGNING_KEY_FILE=/srv/keys/operator.pem
     alphaledger-mcp --ledger /srv/research.db --returns-csv r.csv \
         --registry /srv/registry.jsonl --anchors /srv/anchors/anchors.jsonl
 
@@ -105,6 +108,8 @@ def main(argv=None) -> None:  # pragma: no cover - process entry point
     ap.add_argument("--lag", type=int, default=2, help="2 = trade at the next close (default), 1 = same close")
     ap.add_argument("--registry", help="file binding each dataset to one ledger")
     ap.add_argument("--anchors", help="append-only file the ledger head is anchored to after every write")
+    ap.add_argument("--survivor-free", action="store_true",
+                    help="declare the universe survivor-free (e.g. industry portfolios); silences the heuristic")
     ap.add_argument("--fred", action="append", default=[], metavar="SERIES",
                     help="add a FRED series as a point-in-time variable (repeatable)")
     args = ap.parse_args(argv)
@@ -128,12 +133,18 @@ def main(argv=None) -> None:  # pragma: no cover - process entry point
         for series in args.fred:
             pit.add(fetch_fred_vintages(series, api_key))
         fields = {series.lower(): series for series in args.fred}
-    from ..ledger.store import load_key
+    import os as _os
+
+    from ..ledger.store import load_key, load_signer
+
+    signer_file = _os.environ.get("ALPHALEDGER_SIGNING_KEY_FILE")
+    signer = load_signer(signer_file) if signer_file else None
 
     gw = ResearchGateway(returns, args.ledger, holdout_frac=args.holdout_frac,
                          holdout_budget=args.holdout_budget, cost_bps=args.cost_bps, data_label=label,
                          execution_lag=args.lag, pit=pit, pit_fields=fields, key=load_key(),
-                         anchor_path=args.anchors, registry_path=args.registry)
+                         anchor_path=args.anchors, registry_path=args.registry,
+                         survivor_free=args.survivor_free, signer=signer)
     build_server(gw).run("stdio")
 
 
