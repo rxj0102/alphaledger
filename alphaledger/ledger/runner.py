@@ -50,9 +50,14 @@ def run_logged(
         return hid, None
     stats = dict(res.stats)
     status = "ok"
+    net = res.returns.dropna()
+    if len(net) < 3 or not net.std() > 0:
+        # A signal that never takes a position (or a flat book) measured nothing
+        # useful, but it was still tried, so it stays in the trial count.
+        status = "degenerate"
     if report is not None:
         stats["leak_audit"] = report.to_dict()
         if not report.passed:
-            status = "leak"
+            status = "leak"  # a leak outranks a degenerate result
     ledger.record(hid, stats=stats, returns=res.returns, data_hash=dh, status=status)
     return hid, stats

@@ -4,6 +4,19 @@ A research integrity layer for AI-generated alpha.
 
 AI agents can propose and backtest hundreds of trading signals in an afternoon. The best of those backtests will look great by luck alone. alphaledger sits between the agent and the data, logs every hypothesis it tries (including the failures), and reports performance adjusted for how many things were tested, along with checks for look-ahead and data leakage.
 
+## Quickstart
+
+```
+pip install -e .[dev]
+pytest                                            # 135 tests
+python examples/week6_case_study.py               # blind agent vs alphaledger, about 8 minutes
+alphaledger-mcp --ledger research.db --synthetic  # point Claude or any MCP client at the gateway
+alphaledger-report research.db -o report.html     # one-file report of any ledger
+alphaledger-dashboard research.db                 # Streamlit dashboard
+```
+
+Headline (Week 6 case study): a blind agent that tried 200 signals on a pure noise market would have shipped one with an in-sample Sharpe of 0.68 that lost money on the hidden holdout. On a market with a real edge, the same 200 trials made 36 look significant, yet after accounting for the search none could be certified. Six prior-driven trials on a comparable market kept enough power for 4 to survive correction.
+
 ## Status
 
 | Week | Component | Status |
@@ -13,7 +26,7 @@ AI agents can propose and backtest hundreds of trading signals in an afternoon. 
 | 3 | Stats engine: Deflated Sharpe Ratio, PBO via CSCV, FDR control, t-stat haircuts | Done |
 | 4 | Leakage detectors tested against planted leaks | Done |
 | 5 | MCP gateway so an agent can only reach data and backtests through the ledger | Done |
-| 6 | Dashboard and case study on agent-generated signals | Planned |
+| 6 | Dashboard, HTML report and case study on agent-generated signals | Done |
 
 ## Week 1 design
 
@@ -89,9 +102,11 @@ It sweeps 14 momentum variants on a pure noise market, then deletes the worst tr
 Trials logged: 14
 Best naive Sharpe on pure noise: 0.55 (hypothesis h_dd181499ccbd)
 Chain verifies: True
-Published head hash: e12a09c0eb38d28a...
+Published head hash: <16 hex characters>...
 After deleting entry 24: verifies=False, first bad entry=24, reason: missing entry 24
 ```
+
+The head hash is different on every run because each entry's timestamp is part of its hash. Everything else is deterministic.
 
 Removing the content hash check or the duplicate detection from the code makes the test suite fail, so the tests are checking the real guarantees.
 
@@ -112,6 +127,8 @@ Choices made in `evaluate`:
 - N is the ledger trial count, which includes failed runs. Hiding failures cannot lower the bar.
 - The variance of trial Sharpes is estimated from the trials themselves, as the DSR paper requires.
 - Sharpe ratios are per period and kurtosis is Pearson kurtosis (3 for a normal), matching the papers.
+- Significance is one-sided: the question is whether a trial has positive skill. A high-turnover signal eaten by costs can have a hugely significant negative Sharpe, and that is not a discovery. (This was two-sided until the Week 6 case study showed losers being counted as discoveries.)
+- Two deflated Sharpe ratios are reported. `dsr` follows the paper and uses the spread of Sharpe ratios across the trials themselves. `dsr_analytic` uses the spread a zero-skill Sharpe estimate has from sampling alone, 1 / (T - 1). For independent noise trials the two hurdles agree (tested), but when trials differ for systematic reasons, such as costs or sign flips of one idea, the empirical spread and the paper's hurdle grow far beyond what luck produces (also tested). The Week 6 case study shows why both are needed.
 
 **Checked against published numbers:**
 - The numerical example in Bailey and Lopez de Prado (2014): annual SR 2.5, T = 1250, skew -3, kurtosis 10, N = 100, trial variance 0.5. The paper reports DSR 0.9004. alphaledger gives 0.9004.
@@ -217,6 +234,76 @@ claude mcp add alphaledger -- alphaledger-mcp --ledger /full/path/research.db --
 Or to Claude Desktop in `claude_desktop_config.json` under `mcpServers`, with command `alphaledger-mcp` and the same arguments.
 
 **Tests** cover every operator for causality, 20 hostile or malformed expressions, the hidden holdout, budget enforcement across restarts, duplicate handling, and real tool calls both in process and over stdio through the MCP client. Writing them caught two real bugs: MCP runs tools in worker threads, which SQLite rejected (fixed with a cross-thread connection and serialized writes), and repeated expressions crashed the response (fixed).
+
+## Week 6: dashboard, report and case study
+
+**Report and dashboard.** `alphaledger-report research.db -o report.html` writes one self-contained HTML file (no external assets, light and dark mode): summary tiles, a scatter of naive Sharpe against deflated Sharpe ratio with hover details, the leaderboard and the ledger verification result. `alphaledger-dashboard research.db` opens the same view in Streamlit with a lineage browser. Both are tested, the dashboard with Streamlit's headless AppTest.
+
+### Case study 1: a blind agent proposing 200 signals
+
+`examples/week6_case_study.py` plays an agent that proposes random combinations of common quant building blocks (momentum, reversal, low volatility, trend z-scores, range position, and weighted blends of two), as an LLM told to find alpha might. Every proposal goes through the gateway: hidden 20% holdout, leak audit, ledger, 5 bps costs. It runs on two synthetic markets of 100 assets and 8 years, so the truth is known: one is pure noise, the other has a real momentum-type edge. A naive researcher then picks the best in-sample Sharpe and checks it on the holdout.
+
+| | Noise market | Planted edge market |
+|---|---|---|
+| Trials counted (237 proposals, duplicates not counted) | 200 | 200 |
+| Naive pick: in-sample Sharpe | 0.68 | 1.27 |
+| Raw p < 0.05, one-sided | 1 | 36 |
+| Significant after BH | 0 | 0 |
+| Hurdle Sharpe: trial spread / analytic | 1.89 / 1.12 | 2.43 / 1.12 |
+| Best DSR: trial spread / analytic | 0.001 / 0.15 | 0.002 / 0.62 |
+| PBO | 0.33 | 0.17 |
+| Holm haircut Sharpe of the naive pick | 0.00 | 0.33 |
+| Holdout Sharpe of the naive pick | -1.28 | 0.53 |
+
+What it shows:
+- On noise, a naive researcher would ship a signal with an in-sample Sharpe of 0.68 that lost money on the holdout (-1.28). alphaledger certified nothing.
+- On the planted market, 36 trials look significant before correction, and the naive pick really does have an edge (holdout 0.53). alphaledger still certified nothing: after 200 trials on 6.4 years of data, an edge of about Sharpe 1 cannot be told apart from the best of 200 lucky draws. That is the real cost of blind search. It does not only produce false discoveries; it destroys the power to confirm true ones.
+- The trial-spread hurdle from the original DSR paper (2.43) is more than twice the analytic one (1.12) because these trials differ systematically: high-turnover variants are eaten by costs and blends flip the sign of real signals. That spread is not luck, so it should not raise the bar. Both versions are reported.
+
+### Case study 2: Claude as the agent
+
+`examples/week6_claude_session.py` replays a session in which Claude used the gateway interactively, one decision at a time, on a third synthetic market (seed 303). Claude started from documented anomalies (12-1 momentum, short-term reversal, low volatility), refined the idea that worked with lineage links, stopped after 6 trials, and chose the holdout candidate before opening the holdout. Claude knew the generator plants a continuation edge, so this demonstrates the workflow, not an unbiased discovery.
+
+| Trial | Expression | Naive Sharpe | DSR trial spread | DSR analytic |
+|---|---|---|---|---|
+| 1 | `rank(momentum(252, 21))` | 0.84 | 0.025 | 0.738 |
+| 2 | `rank(-ts_sum(returns, 5))` | -2.15 | 0.000 | 0.000 |
+| 3 | `rank(-ts_std(returns, 63))` | -0.43 | 0.000 | 0.009 |
+| 4 | `rank(momentum(126, 5))` | 1.11 | 0.082 | 0.917 |
+| 5 | `rank(ts_zscore(price, 252))` | 0.99 | 0.055 | 0.839 |
+| 6 | blend of trials 4 and 5 | 1.00 | 0.057 | 0.843 |
+
+(DSR values from the final leaderboard, after all 6 trials.) With 6 trials the analytic hurdle is 0.56 instead of 1.12 at 200, so the same kind of edge gets an analytic DSR of 0.92 rather than 0.62, and 4 trials survive BH. Few, well-motivated hypotheses keep the statistical power that a blind sweep spends.
+
+The weekly reversal trial, which lost money mostly to costs at 32% daily turnover, is what drives the trial-spread hurdle to 1.68 after only six trials: one systematic loser is enough to make the paper's version of DSR almost impossible to pass.
+
+**The holdout came back at -1.12**, even though the edge is real and the generator shows it did not weaken. Running the same strategy on 30 other seeds of the same market model gives a holdout Sharpe of 1.06 on average (sd 0.70, lowest -0.25), so this was a 3.1 sd bad draw. The seed was not changed after seeing it. A 1.6 year holdout is a noisy judge too, which is why the holdout budget exists and why one bad holdout should be read alongside the in-sample evidence rather than as a verdict.
+
+### Bugs the case study found (all fixed, with regression tests)
+- A signal whose two halves cancel produced a flat book and crashed the gateway. Flat results are now recorded with status degenerate: counted as a trial, excluded from evaluation.
+- Two-sided tests counted cost-crushed losers as discoveries. Evaluation is now one-sided.
+- With pandas 3, a missing duplicate link was stored as NaN, which is truthy, so returns of different trials collided in one column whenever the ledger held a duplicate. Links are now kept as None.
+
+## Related work
+
+The closest work is Gençay (2026), *What survives honest evaluation? Leakage-safe, search-aware assessment of LLM-driven trading strategy discovery*, arXiv:2608.27734. It builds leakage safety and search-aware deflation into an LLM strategy discovery system, records every evaluation the search performs, and finds that no LLM-discovered strategy is certified at the agent's own trial count. It also reports that a planted look-ahead oracle survives deflation at a Sharpe of 35, the same reason alphaledger treats leakage as a structural check rather than a statistical one (Week 4).
+
+alphaledger is built as a reusable layer rather than a study: a tamper-evident ledger, a causal expression language and an MCP gateway that any agent can be pointed at, with a hidden holdout budget. The case studies above reach a conclusion consistent with that paper, and add the observation that the paper's trial-spread variance can overstate the hurdle when trials differ systematically.
+
+Other related work:
+- *Hard to Fool: A Bounded LLM Research Loop for Quantitative Finance, and What Two Dozen Campaigns Found*, arXiv:2611.06607.
+- Li et al., *Profit Mirage: Revisiting Information Leakage in LLM-based Financial Agents*, arXiv:2510.07920, on leakage through what the language model itself memorized.
+- *From Knowing to Doing: A Memory-Controlled Benchmark for LLM Trading Agents on Stock Markets* (KTD-Fin), arXiv:2605.28359.
+
+The statistical methods follow Bailey and Lopez de Prado (2012, 2014), Bailey, Borwein, Lopez de Prado and Zhu (2017), Benjamini and Hochberg (1995), Benjamini and Yekutieli (2001), Holm (1979) and Harvey and Liu (2015).
+
+## Limitations
+
+- All headline results use synthetic markets, chosen because the truth is known. The real data loaders are tested on fixtures only; the network fetchers have not been run in this repo's test environment.
+- yfinance universes are survivorship-biased, and the survivorship check will say so.
+- The language model's own memory of market history is a leak no data-level check can see (see Li et al. above). Synthetic or anonymized data avoids it.
+- A discrete choice made with hindsight can pass the leak audit when the edge is strong (see Week 4); only the trial count catches it.
+- The analytic DSR ignores correlation between trials, so it is conservative when trials are highly correlated; the trial-spread DSR can be far too strict when trials differ systematically. Neither is the single right answer.
 
 ## License
 

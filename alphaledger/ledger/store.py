@@ -273,8 +273,13 @@ class Ledger:
                 "spec_hash": p["spec_hash"], "author": p["author"],
                 "duplicate_of": p["duplicate_of"], "spec": p["spec"],
             })
-        return pd.DataFrame(rows, columns=["hypothesis_id", "parent_id", "seq", "ts", "spec_hash",
-                                           "author", "duplicate_of", "spec"])
+        df = pd.DataFrame(rows, columns=["hypothesis_id", "parent_id", "seq", "ts", "spec_hash",
+                                         "author", "duplicate_of", "spec"])
+        # Keep missing links as None. pandas may turn None into NaN, and NaN is
+        # truthy, which silently breaks "duplicate_of or hypothesis_id" lookups.
+        for col in ("parent_id", "duplicate_of"):
+            df[col] = df[col].astype(object).where(df[col].notna(), None)
+        return df
 
     def results(self) -> pd.DataFrame:
         """Latest result per hypothesis, with stats expanded into columns."""
@@ -315,7 +320,8 @@ class Ledger:
             p = json.loads(payload)
             if p["status"] != status or "returns" not in p:
                 continue
-            canonical_id = h.loc[hid, "duplicate_of"] or hid
+            dup = h.loc[hid, "duplicate_of"]
+            canonical_id = dup if isinstance(dup, str) else hid
             cols[canonical_id] = pd.Series(
                 p["returns"]["values"], index=pd.to_datetime(p["returns"]["dates"])
             )

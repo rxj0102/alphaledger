@@ -190,3 +190,47 @@ def test_failed_trials_raise_the_bar():
     assert after.sr0 > before.sr0
     best = before.table.index[0]
     assert after.table.loc[best, "dsr"] < before.table.loc[best, "dsr"]
+
+
+# ---------------------------------------------------------------- one-sided and analytic null
+
+
+def _ledger_from_matrix(x):
+    from alphaledger.ledger import Ledger
+
+    lg = Ledger()
+    idx = pd.bdate_range("2015-01-01", periods=x.shape[0])
+    for j in range(x.shape[1]):
+        h = lg.register({"col": j})
+        lg.record(h, {"sharpe": 0}, returns=pd.Series(x[:, j], index=idx))
+    return lg
+
+
+def test_losers_are_not_discoveries():
+    rng = np.random.default_rng(8)
+    x = rng.normal(0, 0.01, (1500, 20))
+    x[:, 0] -= 0.003  # hugely negative, like a strategy eaten by costs
+    ev = evaluate(_ledger_from_matrix(x))
+    assert not ev.table.loc[ev.table["sr"] < 0, "sig_bh"].any()
+
+
+def test_analytic_hurdle_matches_empirical_for_independent_noise():
+    rng = np.random.default_rng(9)
+    x = rng.normal(0, 0.01, (1500, 300))
+    ev = evaluate(_ledger_from_matrix(x))
+    s = ev.summary()
+    assert s["hurdle_sharpe_annual_analytic"] == pytest.approx(s["hurdle_sharpe_annual"], rel=0.12)
+
+
+def test_systematic_dispersion_inflates_empirical_hurdle_only():
+    rng = np.random.default_rng(10)
+    x = rng.normal(0, 0.01, (1500, 40))
+    x[:, :10] -= 0.002  # ten trials share a systematic drag
+    # One real edge with realized annual Sharpe of exactly about 1.9 (demeaned
+    # noise plus a fixed drift), so the test does not depend on a lucky draw.
+    x[:, 39] = x[:, 39] - x[:, 39].mean() + 0.0012
+    ev = evaluate(_ledger_from_matrix(x))
+    s = ev.summary()
+    assert s["hurdle_sharpe_annual"] > 2 * s["hurdle_sharpe_annual_analytic"]
+    best = ev.table.iloc[0]
+    assert best["dsr_analytic"] > 0.95 > best["dsr"]

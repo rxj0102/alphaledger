@@ -168,3 +168,21 @@ def test_data_fingerprint_changes_with_data():
     r2.iloc[10, 2] += 1e-9
     assert data_fingerprint(r) == data_fingerprint(r.copy())
     assert data_fingerprint(r) != data_fingerprint(r2)
+
+
+def test_duplicates_mixed_with_originals_keep_clean_ids():
+    # Regression: with pandas 3, None in duplicate_of became NaN, NaN is truthy,
+    # and returns_matrix produced a NaN column that crashed the report.
+    r = make_market(n_assets=30, n_days=400, seed=4)
+    lg = Ledger()
+    build = lambda x: quantile_long_short(momentum(x, 60, 5))
+    a, _ = run_logged(lg, {"s": "a"}, build, r)
+    b, _ = run_logged(lg, {"s": "b"}, build, r)
+    run_logged(lg, {"s": "a"}, build, r)  # duplicate of a
+    m = lg.returns_matrix()
+    assert sorted(m.columns) == sorted([a, b])
+    h = lg.hypotheses()
+    assert h["duplicate_of"].tolist()[:2] == [None, None]
+    from alphaledger.report import build_report
+
+    assert "<svg" in build_report(lg)

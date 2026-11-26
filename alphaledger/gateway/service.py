@@ -81,14 +81,25 @@ class ResearchGateway:
     def _context(self, sr_daily: float, t_obs: int, skew: float, kurt: float) -> dict:
         n = max(self.ledger.n_trials(), 1)
         m = self.ledger.returns_matrix()
-        sharpes = [moments(m[c])[0] for c in m.columns if m[c].notna().sum() > 2]
+        sharpes = []
+        for c in m.columns:
+            try:
+                sharpes.append(moments(m[c])[0])
+            except ValueError:
+                pass  # flat series carry no Sharpe
         var = float(pd.Series(sharpes).var(ddof=1)) if len(sharpes) > 1 else 0.0
         sr0 = expected_max_sr(n, var)
+        sr0a = expected_max_sr(n, 1 / (t_obs - 1))
         return {
             "trials_so_far": n,
             "hurdle_sharpe_annual": _r(sr0 * math.sqrt(252), 3),
             "deflated_sharpe_ratio": _r(psr(sr_daily, t_obs, skew, kurt, sr0)),
-            "note": "Deflated Sharpe above 0.95 means the result likely survives the number of trials run so far.",
+            "hurdle_sharpe_annual_analytic": _r(sr0a * math.sqrt(252), 3),
+            "deflated_sharpe_ratio_analytic": _r(psr(sr_daily, t_obs, skew, kurt, sr0a)),
+            "note": ("Deflated Sharpe above 0.95 means the result likely survives the number of trials "
+                     "run so far. The first version uses the spread of your own trial Sharpes (strict when "
+                     "trials differ for systematic reasons such as costs); the analytic version assumes "
+                     "independent zero-skill trials."),
         }
 
     def test_signal(self, expression: str, q: float = 0.2, rebalance_freq: str = "M",
@@ -123,11 +134,12 @@ class ResearchGateway:
                                                       "t_stat", "avg_daily_turnover", "n_obs")}
         out["leak_audit"] = {"passed": audit.get("passed", True),
                              "findings": [f"{f['check']}: {f['detail']}" for f in audit.get("findings", [])]}
-        if trial["duplicate_of"]:
-            out["duplicate_of"] = trial["duplicate_of"]
+        dup = trial["duplicate_of"] if isinstance(trial["duplicate_of"], str) else None
+        if dup:
+            out["duplicate_of"] = dup
             out["note"] = "identical to an earlier test; logged but not counted as a new trial"
         if trial["status"] == "ok":
-            col = trial["duplicate_of"] or hid
+            col = dup or hid
             r = self.ledger.returns_matrix()[col].dropna()
             sr, skew, kurt, t_obs = moments(r)
             out["trial_adjusted"] = self._context(sr, t_obs, skew, kurt)
@@ -146,6 +158,7 @@ class ResearchGateway:
             "expression": specs[hid].get("expression"),
             "naive_sharpe": _r(row.sr_annual, 3),
             "deflated_sharpe_ratio": _r(row.dsr),
+            "deflated_sharpe_ratio_analytic": _r(row.dsr_analytic),
             "significant_after_fdr": bool(row.sig_bh),
             "haircut_sharpe": _r(row.sr_haircut_holm, 3),
         } for hid, row in tab.iterrows()]
@@ -153,6 +166,7 @@ class ResearchGateway:
         return {
             "n_trials": s["n_trials"],
             "hurdle_sharpe_annual": _r(s["hurdle_sharpe_annual"], 3),
+            "hurdle_sharpe_annual_analytic": _r(s["hurdle_sharpe_annual_analytic"], 3),
             "probability_of_backtest_overfitting": _r(s["pbo"], 3),
             "n_significant_after_fdr": s["n_significant_bh"],
             "top": rows,

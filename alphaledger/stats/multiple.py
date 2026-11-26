@@ -71,7 +71,7 @@ def reject(pvals, alpha: float = 0.05, method: str = "bh") -> np.ndarray:
 
 
 def haircut_sharpe(sr_annual: float, n_obs: int, n_trials: int, method: str = "bonferroni",
-                   periods: int = 252, other_pvals=None) -> dict:
+                   periods: int = 252, other_pvals=None, two_sided: bool = True) -> dict:
     """Harvey and Liu style Sharpe haircut.
 
     Convert the Sharpe ratio to a t-stat (t = SR_annual * sqrt(n_obs / periods)),
@@ -85,13 +85,17 @@ def haircut_sharpe(sr_annual: float, n_obs: int, n_trials: int, method: str = "b
         raise ValueError("n_trials must be at least 1")
     years = n_obs / periods
     t_stat = sr_annual * math.sqrt(years)
-    p = p_from_t(t_stat)
+    if not two_sided and t_stat <= 0:
+        # One-sided test of positive skill: a non-positive Sharpe has nothing to keep.
+        return {"sr_annual": sr_annual, "t_stat": t_stat, "p_value": p_from_t(t_stat, False),
+                "p_adjusted": 1.0, "sr_haircut": min(sr_annual, 0.0), "haircut_pct": float("nan")}
+    p = p_from_t(t_stat, two_sided)
     others = list(other_pvals) if other_pvals is not None else [1.0] * (n_trials - 1)
     if len(others) != n_trials - 1:
         raise ValueError("other_pvals must have n_trials - 1 entries")
     all_p = np.array([p] + others)
     p_adj = float(adjust(all_p, method)[0])
-    t_adj = t_from_p(p_adj)
+    t_adj = t_from_p(p_adj, two_sided)
     sr_adj = math.copysign(t_adj / math.sqrt(years), sr_annual) if t_adj > 0 else 0.0
     sr_adj = min(abs(sr_adj), abs(sr_annual)) * (1 if sr_annual >= 0 else -1)
     return {

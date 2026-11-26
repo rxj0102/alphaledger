@@ -187,3 +187,13 @@ def test_mcp_over_stdio(tmp_path):
     out, ver = asyncio.run(asyncio.wait_for(go(), timeout=120))
     assert out["status"] == "ok"
     assert ver["chain_ok"] and ver["entries"] == 2
+
+
+def test_flat_signal_is_degenerate_not_a_crash(gw):
+    # Regression: an expression that cancels to zero used to crash the gateway.
+    out = gw.test_signal("0.5 * rank(momentum(120, 5)) - 0.5 * rank(momentum(120, 5))", rationale="x")
+    assert out["status"] == "degenerate"
+    assert gw.ledger.n_trials() == 1
+    good = gw.test_signal("rank(momentum(120, 5))", rationale="y")
+    assert good["status"] == "ok" and good["trial_adjusted"]["trials_so_far"] == 2
+    assert gw.leaderboard()["n_trials"] == 2

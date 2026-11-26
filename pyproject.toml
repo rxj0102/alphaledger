@@ -10,15 +10,18 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Rajvardhan Jadhav" }]
-dependencies = ["numpy>=1.26", "pandas>=2.1"]
+dependencies = ["numpy>=1.26", "pandas>=2.2"]
 
 [project.optional-dependencies]
 data = ["yfinance>=0.2"]
 mcp = ["mcp>=2.3"]
-dev = ["pytest>=8", "statsmodels>=0.14", "mcp>=2.3"]
+dashboard = ["streamlit>=1.40"]
+dev = ["pytest>=8", "statsmodels>=0.14", "mcp>=2.3", "streamlit>=1.40"]
 
 [project.scripts]
 alphaledger-mcp = "alphaledger.gateway.mcp_server:main"
+alphaledger-report = "alphaledger.report:main"
+alphaledger-dashboard = "alphaledger.dashboard:main"
 
 [tool.setuptools.packages.find]
 include = ["alphaledger*"]

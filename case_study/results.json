@@ -1,0 +1,62 @@
+[
+  {
+    "market": "noise",
+    "proposals": 237,
+    "trials": 200,
+    "leak_audit_failures": 0,
+    "naive": {
+      "best_expression": "rank(-ts_sum(returns, 1))",
+      "best_q": 0.2,
+      "best_rebalance": "M",
+      "best_in_sample_sharpe": 0.683,
+      "significant_at_5pct_raw_one_sided": 1
+    },
+    "alphaledger": {
+      "hurdle_sharpe": 1.888,
+      "hurdle_sharpe_analytic": 1.117,
+      "best_dsr": 0.0012,
+      "best_dsr_analytic": 0.1465,
+      "pass_dsr_analytic_95": 0,
+      "significant_after_bh": 0,
+      "pass_dsr_95": 0,
+      "pbo": 0.331,
+      "best_haircut_sharpe_holm": 0.0
+    },
+    "holdout_of_naive_pick": {
+      "sharpe": -1.278,
+      "psr_vs_zero": 0.0516,
+      "days": 404
+    },
+    "ledger_verifies": true
+  },
+  {
+    "market": "planted",
+    "proposals": 237,
+    "trials": 200,
+    "leak_audit_failures": 0,
+    "naive": {
+      "best_expression": "0.5 * rank((price - ts_min(price, 21)) / (ts_max(price, 21) - ts_min(price, 21))) + 0.5 * rank(momentum(126, 1))",
+      "best_q": 0.1,
+      "best_rebalance": "M",
+      "best_in_sample_sharpe": 1.266,
+      "significant_at_5pct_raw_one_sided": 36
+    },
+    "alphaledger": {
+      "hurdle_sharpe": 2.434,
+      "hurdle_sharpe_analytic": 1.117,
+      "best_dsr": 0.0023,
+      "best_dsr_analytic": 0.6195,
+      "pass_dsr_analytic_95": 0,
+      "significant_after_bh": 0,
+      "pass_dsr_95": 0,
+      "pbo": 0.166,
+      "best_haircut_sharpe_holm": 0.327
+    },
+    "holdout_of_naive_pick": {
+      "sharpe": 0.525,
+      "psr_vs_zero": 0.7461,
+      "days": 404
+    },
+    "ledger_verifies": true
+  }
+]
