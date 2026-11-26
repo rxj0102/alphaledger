@@ -25,17 +25,34 @@ def run_logged(
     rationale: str = "",
     lag: int = 1,
     cost_bps: float = 0.0,
+    audit_leaks: bool = False,
+    scores_fn: Callable[[pd.DataFrame], pd.DataFrame] | None = None,
 ) -> tuple[str, dict | None]:
-    """Returns (hypothesis_id, stats or None if the run failed)."""
+    """Returns (hypothesis_id, stats or None if the run failed).
+
+    With ``audit_leaks=True`` the leakage checks run first. A trial that fails
+    a hard check is recorded with status "leak": it still counts as a trial
+    but is excluded from the returns used for evaluation.
+    """
     hid = ledger.register(spec, parent_id=parent_id, author=author, rationale=rationale)
     dh = data_fingerprint(returns)
     try:
         weights = build_weights(returns)
         res = run_backtest(weights, returns, lag=lag, cost_bps=cost_bps)
+        report = None
+        if audit_leaks:
+            from ..leakage import audit
+
+            report = audit(build_weights, returns, scores_fn=scores_fn)
     except Exception as exc:  # failures are trials too
         ledger.record(hid, stats={}, data_hash=dh, status="error",
                       error=f"{type(exc).__name__}: {exc}")
         return hid, None
-    stats = res.stats
-    ledger.record(hid, stats=stats, returns=res.returns, data_hash=dh)
+    stats = dict(res.stats)
+    status = "ok"
+    if report is not None:
+        stats["leak_audit"] = report.to_dict()
+        if not report.passed:
+            status = "leak"
+    ledger.record(hid, stats=stats, returns=res.returns, data_hash=dh, status=status)
     return hid, stats

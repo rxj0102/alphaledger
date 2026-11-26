@@ -11,7 +11,7 @@ AI agents can propose and backtest hundreds of trading signals in an afternoon. 
 | 1 | Point-in-time data layer, vectorized backtester, momentum sanity check | Done |
 | 2 | Append-only, hash-chained hypothesis ledger with lineage | Done |
 | 3 | Stats engine: Deflated Sharpe Ratio, PBO via CSCV, FDR control, t-stat haircuts | Done |
-| 4 | Leakage detectors tested against planted leaks | Planned |
+| 4 | Leakage detectors tested against planted leaks | Done |
 | 5 | MCP gateway so an agent can only reach data and backtests through the ledger | Planned |
 | 6 | Dashboard and case study on agent-generated signals | Planned |
 
@@ -140,6 +140,43 @@ It runs the same 60-variant momentum sweep on two synthetic markets (150 assets,
 | PBO | 0.52 | 0.22 |
 
 On noise, PBO is close to the 0.5 expected when picking the winner is a coin flip, and the best trial barely clears the hurdle Sharpe. With a real edge, every variant survives correction. PBO is still 0.22 because the variants all share the same edge, so which one wins in sample is partly luck. PBO measures how reliable the choice among trials is, not whether the edge is real. Both views are needed.
+
+## Week 4 design: leakage detectors
+
+`alphaledger/leakage.py` audits any function that turns returns into signals or weights. A causal function's row for date t can only depend on data up to t, and the hard checks test exactly that.
+
+| Check | Severity | How it works |
+|---|---|---|
+| Truncation | fail | Recompute with all data after t removed; row t must not change |
+| Future perturbation | fail | Scramble every return after t; no row at or before t may change |
+| IC implausibility | warn | Mean daily rank IC above 0.1, far beyond real daily signals |
+| Lag fragility | warn | Sharpe above 1 at lag 1 that falls below 30% of that at lag 2 |
+| Survivorship | warn | A multi-year universe in which no asset ever stops trading |
+| Holdout reuse | warn | More than one trial evaluated on a declared holdout window |
+
+`run_logged(..., audit_leaks=True)` runs the audit before recording. A trial that fails a hard check is stored with status leak: it still counts toward N, so the stats stay honest, but its returns are excluded from evaluation.
+
+Demo:
+
+```
+python examples/week4_leak_demo.py
+```
+
+Output (80 synthetic assets with a planted momentum edge, 4 years, seed 0):
+
+| Signal | Naive Sharpe | Audit | Hard checks failed | Warnings |
+|---|---|---|---|---|
+| clean: 6-1 momentum | 2.05 | PASS | none | none |
+| clean: 1-day reversal | -0.14 | PASS | none | none |
+| leak: tomorrow's return | 198.29 | FAIL | perturbation, truncation | IC, lag fragility |
+| leak: centered 21-day window | 28.13 | FAIL | perturbation, truncation | IC |
+| leak: full-sample z-score | -1.04 | FAIL | perturbation, truncation | none |
+| leak: backward fill | 3.26 | FAIL | truncation | none |
+| leak: month-end value all month | 9.86 | FAIL | perturbation, truncation | none |
+
+The backward fill row is the dangerous kind: a believable Sharpe of 3.26 against 2.05 for the clean version of the same signal, with no soft check firing. Only the truncation test sees it. The full-sample z-score shows that leaks do not always help; they make the backtest wrong in either direction.
+
+**Known limitation.** A discrete choice made with hindsight, such as picking a signal's sign from its full-sample correlation with future returns, is invisible to any data-level check when the edge is strong: every truncated sample picks the same sign, so the output never changes. A test documents this. The defence is the ledger: trying both signs is two trials, and the deflated statistics account for it.
 
 ## License
 
